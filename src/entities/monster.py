@@ -7,5 +7,5 @@ class Monster(GameObject[GameObjectType]):
 
     def update(self):
         self.rect.y += self.speed
-        if self.rect.top > self.window_height:  # Use stored value
+        if self.rect.top > self.window_height:
             self.kill()
