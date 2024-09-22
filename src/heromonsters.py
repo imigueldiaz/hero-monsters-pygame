@@ -18,6 +18,7 @@ FONT_SIZE = 36
 # --- Colors ---
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
+GOLDEN = (255, 215, 0, 200)
 
 
 class Game:
@@ -33,6 +34,8 @@ class Game:
         self.bg_y = -self.bg_height  # Inicialmente, la segunda copia está arriba
 
         self.hero_image = pygame.image.load("../assets/images/hero.png").convert_alpha()
+        pygame.display.set_icon(self.hero_image)  # Set the hero image as the window icon
+
         self.monster_image = pygame.image.load("../assets/images/monster.png").convert_alpha()
         self.coin_image = pygame.image.load("../assets/images/coin.png").convert_alpha()
 
@@ -78,9 +81,35 @@ class Game:
         score_text = pygame.font.Font(None, FONT_SIZE).render("Score: " + str(self.score), True, WHITE)
         self.screen.blit(score_text, (10, 10))
 
+    def blink_hero(self):
+        # Create a mask from the hero image
+        mask = pygame.mask.from_surface(self.hero_image)
+        mask_surface = mask.to_surface(setcolor=GOLDEN, unsetcolor=(0, 0, 0, 0))
+
+        # Create a halo surface
+        halo_size = (self.hero.rect.width + 5, self.hero.rect.height + 5)  # Adjust size as needed
+        halo_surface = pygame.Surface(halo_size, pygame.SRCALPHA)
+        pygame.draw.ellipse(halo_surface, (255, 215, 0, 30), halo_surface.get_rect())  # Golden halo with transparency
+
+        # Position the halo surface behind the hero
+        halo_rect = halo_surface.get_rect(center=self.hero.rect.center)
+
+        if pygame.time.get_ticks() % 1000 < 500:
+            self.screen.blit(self.hero_image, self.hero.rect)
+        else:
+            self.screen.blit(halo_surface, halo_rect)
+            self.screen.blit(mask_surface, self.hero.rect)
+
+        pygame.display.flip()
+
     def display_game_over(self):
+        self.blink_hero()
+
         game_over_text = pygame.font.Font(None, FONT_SIZE).render("Game Over! Press Space to Restart", True, WHITE)
-        self.screen.blit(game_over_text, game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2)))
+        text_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
+        self.screen.blit(game_over_text, text_rect)
+
+        pygame.display.flip()  # Update the display to show the game over message
 
     def reset_game(self):
         self.score = 0
@@ -88,7 +117,8 @@ class Game:
         self.all_sprites.empty()
         self.monsters.empty()
         self.coins.empty()
-        self.hero = Hero(WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2, WINDOW_HEIGHT - self.hero_image.get_height() - 10,
+        self.hero = Hero(WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
+                         WINDOW_HEIGHT - self.hero_image.get_height() - 10,
                          HERO_SPEED, WINDOW_WIDTH)
         self.all_sprites.add(self.hero)
 
@@ -116,7 +146,8 @@ class Game:
 
                 if len(self.monsters) < MAX_MONSTERS and random.random() < 0.06:
                     monster = self.create_monster()
-                    if not pygame.sprite.spritecollideany(monster, self.monsters) and not pygame.sprite.spritecollideany(monster, self.coins):
+                    if not pygame.sprite.spritecollideany(monster, self.monsters) and not pygame.sprite.spritecollideany(
+                            monster, self.coins):
                         self.monsters.add(monster)
                         self.all_sprites.add(monster)
 
