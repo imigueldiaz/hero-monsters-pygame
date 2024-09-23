@@ -18,7 +18,8 @@ FONT_SIZE = 36
 # --- Colors ---
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
-GOLDEN = (255, 215, 0, 200)
+GOLDENTRANS = (255, 215, 0, 50)
+REDFIRETRANS = (255, 36,0,40)
 
 # --- Paths ---
 BASE_PATH = os.path.dirname(__file__)
@@ -104,26 +105,68 @@ class Game:
         score_text = pygame.font.Font(None, FONT_SIZE).render(f"Score: {self.score}", True, WHITE)
         self.screen.blit(score_text, (10, 10))
 
+
+    def apply_ripple(self, surface, amplitude, frequency, speed, offset):
+        """Apply a horizontal ripple effect to the given surface."""
+        width, height = surface.get_size()
+        new_surface = pygame.Surface((width, height), pygame.SRCALPHA)
+
+        for y in range(height):
+            # Calculate horizontal distortion using a sine wave
+            distortion = int(amplitude * math.sin(2 * math.pi * frequency * (y / height) + offset))
+
+            for x in range(width):
+                # Make sure the distortion doesn't go out of bounds
+                src_x = (x + distortion) % width
+
+                # Get the pixel color from the original surface
+                pixel_color = surface.get_at((src_x, y))
+
+                # Set that pixel color on the new surface at the same position
+                new_surface.set_at((x, y), pixel_color)
+
+        return new_surface
+
     def blink_hero(self):
         # Create a mask from the hero image
         mask = pygame.mask.from_surface(self.hero_image)
-        mask_surface = mask.to_surface(setcolor=GOLDEN, unsetcolor=(0, 0, 0, 0))
+        mask_surface = mask.to_surface(setcolor=GOLDENTRANS, unsetcolor=(0, 0, 0, 0))  # Golden mask
 
-        # Create a halo surface
-        halo_size = (self.hero.rect.width + 5, self.hero.rect.height + 5)  # Adjust size as needed
-        halo_surface = pygame.Surface(halo_size, pygame.SRCALPHA)
-        pygame.draw.ellipse(halo_surface, (255, 215, 0, 30), halo_surface.get_rect())  # Golden halo with transparency
+        # Ripple effect variables
+        ripple_amplitude = 20 # Smaller distortion for a subtle ripple effect
+        ripple_frequency = 30  # Adjust the number of ripples
+        ripple_speed = 0.2  # Speed of ripple movement
+        ripple_offset = pygame.time.get_ticks() * ripple_speed  # Animate the ripple over time
 
-        # Position the halo surface behind the hero
-        halo_rect = halo_surface.get_rect(center=self.hero.rect.center)
+        # Create halo surfaces (one for golden, one for red)
+        halo_size = (self.hero.rect.width + 15, self.hero.rect.height + 25)  # Adjust size for golden halo
+        halo_surface_golden = pygame.Surface(halo_size, pygame.SRCALPHA)
+        pygame.draw.ellipse(halo_surface_golden, GOLDENTRANS, halo_surface_golden.get_rect())  # Golden halo
 
+        red_halo_size = (self.hero.rect.width + 25, self.hero.rect.height + 35)  # Adjust size for red halo
+        halo_surface_red = pygame.Surface(red_halo_size, pygame.SRCALPHA)
+        pygame.draw.ellipse(halo_surface_red, REDFIRETRANS, halo_surface_red.get_rect())  # Red flaming halo
+
+        # Apply the ripple effect to both halos
+        halo_surface_golden_rippled = self.apply_ripple(halo_surface_golden, ripple_amplitude, ripple_frequency, ripple_speed, ripple_offset)
+        halo_surface_red_rippled = self.apply_ripple(halo_surface_red, ripple_amplitude * 2, ripple_frequency, ripple_speed, ripple_offset)
+
+        # Position the halos behind the hero
+        golden_halo_rect = halo_surface_golden_rippled.get_rect(center=self.hero.rect.center)
+        red_halo_rect = halo_surface_red_rippled.get_rect(center=self.hero.rect.center)
+
+        # Blinking effect (both halos blink at the same time)
         if pygame.time.get_ticks() % 1000 < 500:
-            self.screen.blit(self.hero_image, self.hero.rect)
-        else:
-            self.screen.blit(halo_surface, halo_rect)
             self.screen.blit(mask_surface, self.hero.rect)
+        else:
+            # Blit the red halo first, then the golden halo, then the hero image
+            self.screen.blit(halo_surface_red_rippled, red_halo_rect)     # Red flaming halo with ripple
+            self.screen.blit(halo_surface_golden_rippled, golden_halo_rect)  # Golden halo with ripple
+            self.screen.blit(mask_surface, self.hero.rect)        # Hero mask with golden color
 
         pygame.display.flip()
+
+
 
     def display_game_over(self):
         self.blink_hero()
