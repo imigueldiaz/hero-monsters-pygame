@@ -1,8 +1,8 @@
 from .gameobject import GameObject, GameObjectType
 
 class Monster(GameObject[GameObjectType]):
-    def __init__(self, x: int, y: int, monster_speed: int, window_height: int):  # Add arguments
-        super().__init__("../assets/images/monster.png", x, y, monster_speed)
+    def __init__(self, image_path: str, x: int, y: int, monster_speed: int, window_height: int):
+        super().__init__(image_path, x, y, monster_speed)
         self.window_height = window_height
 
     def update(self):

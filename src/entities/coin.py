@@ -1,13 +1,11 @@
 import random
-
 from .gameobject import GameObject, GameObjectType
 
-
 class Coin(GameObject[GameObjectType]):
-    def __init__(self, x, y, speed, height):
-        super().__init__("../assets/images/coin.png", x, y, speed)
+    def __init__(self, image_path: str, x: int, y: int, speed: int, window_height: int):
+        super().__init__(image_path, x, y, speed)
         self.value = random.randint(1, 25)
-        self.window_height = height
+        self.window_height = window_height
 
     def update(self):
         self.rect.y += self.speed

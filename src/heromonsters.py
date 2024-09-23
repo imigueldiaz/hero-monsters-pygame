@@ -1,7 +1,7 @@
-import math
-
+import os
 import pygame
 import random
+import math
 
 from entities import Hero, Monster, Coin, GameObjectType
 
@@ -20,6 +20,11 @@ BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 GOLDEN = (255, 215, 0, 200)
 
+# --- Paths ---
+BASE_PATH = os.path.dirname(__file__)
+SPRITES_PATH = os.path.join(BASE_PATH, '../assets/images')
+SOUNDS_PATH = os.path.join(BASE_PATH, '../assets/music')
+
 
 class Game:
     def __init__(self):
@@ -27,25 +32,31 @@ class Game:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Hero vs Monsters")
 
-        self.bg_image = pygame.image.load("../assets/images/bg.png").convert()
+        # Load images
+        self.bg_image = pygame.image.load(os.path.join(SPRITES_PATH, 'bg.png')).convert()
+
+        # Initialize background scrolling positions
         self.bg_width = self.bg_image.get_width()
         self.bg_height = self.bg_image.get_height()
         self.bg_x = 0
-        self.bg_y = -self.bg_height  # Inicialmente, la segunda copia está arriba
+        self.bg_y = -self.bg_height  # Initially, the second copy is placed above the screen
 
-        self.hero_image = pygame.image.load("../assets/images/hero.png").convert_alpha()
-        pygame.display.set_icon(self.hero_image)  # Set the hero image as the window icon
 
-        self.monster_image = pygame.image.load("../assets/images/monster.png").convert_alpha()
-        self.coin_image = pygame.image.load("../assets/images/coin.png").convert_alpha()
+        self.hero_image = pygame.image.load(os.path.join(SPRITES_PATH, 'hero.png')).convert_alpha()
+        self.monster_image = pygame.image.load(os.path.join(SPRITES_PATH, 'monster.png')).convert_alpha()
+        self.coin_image = pygame.image.load(os.path.join(SPRITES_PATH, 'coin.png')).convert_alpha()
+
+        # Set the hero image as the window icon
+        pygame.display.set_icon(self.hero_image)
 
         # Sprite groups
-        self.all_sprites: pygame.sprite.Group[GameObjectType] = pygame.sprite.Group()
-        self.monsters: pygame.sprite.Group[Monster] = pygame.sprite.Group()
-        self.coins: pygame.sprite.Group[Coin] = pygame.sprite.Group()
+        self.all_sprites = pygame.sprite.Group()
+        self.monsters = pygame.sprite.Group()
+        self.coins = pygame.sprite.Group()
 
         # Create hero
         self.hero = Hero(
+            os.path.join(SPRITES_PATH, 'hero.png'),
             WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
             WINDOW_HEIGHT - self.hero_image.get_height() - 10,
             HERO_SPEED,
@@ -54,12 +65,12 @@ class Game:
         self.all_sprites.add(self.hero)
 
         # Load music and sound effects
-        pygame.mixer.music.load("../assets/music/sound.mp3")
+        pygame.mixer.music.load(os.path.join(SOUNDS_PATH, 'sound.mp3'))
         pygame.mixer.music.play(-1)
 
-        self.PING = pygame.mixer.Sound("../assets/music/ping01.mp3")
-        self.PONG = pygame.mixer.Sound("../assets/music/ping02.mp3")
-        self.HIT = pygame.mixer.Sound("../assets/music/hit01.mp3")
+        self.PING = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping01.mp3'))
+        self.PONG = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping02.mp3'))
+        self.HIT = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'hit01.mp3'))
 
         self.score = 0
         self.game_over = False
@@ -70,15 +81,27 @@ class Game:
 
     def create_monster(self):
         x = random.randint(0, WINDOW_WIDTH - self.monster_image.get_width())
-        return Monster(x, 0, MONSTER_SPEED, WINDOW_HEIGHT)
+        return Monster(
+            os.path.join(SPRITES_PATH, 'monster.png'),  # Pass the full path for the monster image
+            x,
+            0,
+            MONSTER_SPEED,
+            WINDOW_HEIGHT
+        )
 
     def create_coin(self):
         x = random.randint(0, WINDOW_WIDTH - self.coin_image.get_width())
-        y = -self.coin_image.get_height()  # Inicializar fuera de la pantalla, arriba
-        return Coin(x, y, COIN_SPEED, WINDOW_HEIGHT)  # Pasar la altura de la ventana
+        y = -self.coin_image.get_height()  # Initialize outside the screen, above
+        return Coin(
+            os.path.join(SPRITES_PATH, 'coin.png'),  # Pass the full path for the coin image
+            x,
+            y,
+            COIN_SPEED,
+            WINDOW_HEIGHT
+        )
 
     def display_score(self):
-        score_text = pygame.font.Font(None, FONT_SIZE).render("Score: " + str(self.score), True, WHITE)
+        score_text = pygame.font.Font(None, FONT_SIZE).render(f"Score: {self.score}", True, WHITE)
         self.screen.blit(score_text, (10, 10))
 
     def blink_hero(self):
@@ -117,10 +140,17 @@ class Game:
         self.all_sprites.empty()
         self.monsters.empty()
         self.coins.empty()
-        self.hero = Hero(WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
-                         WINDOW_HEIGHT - self.hero_image.get_height() - 10,
-                         HERO_SPEED, WINDOW_WIDTH)
+
+        # Create hero with the full image path
+        self.hero = Hero(
+            os.path.join(SPRITES_PATH, 'hero.png'),
+            WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
+            WINDOW_HEIGHT - self.hero_image.get_height() - 10,
+            HERO_SPEED,
+            WINDOW_WIDTH  # Make sure to pass window_width here
+        )
         self.all_sprites.add(self.hero)
+
 
     def run(self):
         while self.running:
@@ -146,8 +176,7 @@ class Game:
 
                 if len(self.monsters) < MAX_MONSTERS and random.random() < 0.06:
                     monster = self.create_monster()
-                    if not pygame.sprite.spritecollideany(monster, self.monsters) and not pygame.sprite.spritecollideany(
-                            monster, self.coins):
+                    if not pygame.sprite.spritecollideany(monster, self.monsters) and not pygame.sprite.spritecollideany(monster, self.coins):
                         self.monsters.add(monster)
                         self.all_sprites.add(monster)
 
@@ -165,7 +194,7 @@ class Game:
 
                 for coin in pygame.sprite.spritecollide(self.hero, self.coins, True):
                     self.score += coin.value
-                    # randomly play one of the two sounds
+                    # Randomly play one of the two sounds
                     sound = random.choice([self.PING, self.PONG])
                     volume = math.log10(coin.value + 1) / math.log10(26)  # Volume from 0 to 1
                     sound.set_volume(volume)
@@ -173,13 +202,13 @@ class Game:
 
                 # --- Scrolling Background ---
                 self.bg_y += 2
-                if self.bg_y >= 0:  # Cuando la segunda copia llega al tope
-                    self.bg_y = -self.bg_height  # Se reinicia arriba
+                if self.bg_y >= 0:  # When the second copy reaches the top
+                    self.bg_y = -self.bg_image.get_height()  # Reset to the top
 
             # --- Draw ---
             # Tile the background horizontally and vertically
-            for x in range(0, WINDOW_WIDTH, self.bg_width):
-                for y in range(self.bg_y, WINDOW_HEIGHT, self.bg_height):
+            for x in range(0, WINDOW_WIDTH, self.bg_image.get_width()):
+                for y in range(self.bg_y, WINDOW_HEIGHT, self.bg_image.get_height()):
                     self.screen.blit(self.bg_image, (x, y))
 
             self.all_sprites.draw(self.screen)

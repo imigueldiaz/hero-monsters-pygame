@@ -1,5 +1,5 @@
 import pygame
-from typing import TypeVar, Generic  # Import Generic
+from typing import TypeVar, Generic
 
 GameObjectType = TypeVar("GameObjectType", bound="GameObject")
 
