@@ -25,7 +25,7 @@ This is a fun experiment to learn PyGame by creating a simple game where a hero 
 
 1. **Run the game:**
     ```sh
-    python heromonsters.py
+    python run_game.py
     ```
 
 2. **Controls:**
