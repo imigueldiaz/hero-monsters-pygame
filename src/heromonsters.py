@@ -3,7 +3,7 @@ import pygame
 import random
 import math
 
-from entities import Hero, Monster, Coin, GameObjectType
+from entities import Hero, Monster, Coin, GameObjectType, Jewel
 
 # --- Constants ---
 WINDOW_WIDTH, WINDOW_HEIGHT = 600, 800
@@ -11,8 +11,10 @@ FPS = 50
 HERO_SPEED = 5
 MONSTER_SPEED = 3
 COIN_SPEED = 5
+JEWEL_SPEED = 7
 MAX_MONSTERS = 5
 MAX_COINS = 3
+MAX_JEWELS = 2
 FONT_SIZE = 36
 
 # --- Colors ---
@@ -46,6 +48,14 @@ class Game:
         self.hero_image = pygame.image.load(os.path.join(SPRITES_PATH, 'hero.png')).convert_alpha()
         self.monster_image = pygame.image.load(os.path.join(SPRITES_PATH, 'monster.png')).convert_alpha()
         self.coin_image = pygame.image.load(os.path.join(SPRITES_PATH, 'coin.png')).convert_alpha()
+        self.jewels_images = []
+        self.jewels_paths = {}  
+
+        #Load the four jewel images
+        for i in range(1, 5):
+            path = os.path.join(SPRITES_PATH, f'jewel{i}.png')
+            self.jewels_images.append(pygame.image.load(path).convert_alpha())
+            self.jewels_paths[i] = path
 
         # Set the hero image as the window icon
         pygame.display.set_icon(self.hero_image)
@@ -54,6 +64,7 @@ class Game:
         self.all_sprites = pygame.sprite.Group()
         self.monsters = pygame.sprite.Group()
         self.coins = pygame.sprite.Group()
+        self.jewels = pygame.sprite.Group()
 
         # Create hero
         self.hero = Hero(
@@ -102,6 +113,22 @@ class Game:
             x,
             y,
             COIN_SPEED,
+            WINDOW_HEIGHT
+        )
+    def create_jewel(self):
+        # Randomly select one of the four jewel images
+        jewel_image_index = random.choice(range(1, 5)) - 1  # Adjust for zero-indexing
+        x = random.randint(0, WINDOW_WIDTH - self.jewels_images[jewel_image_index].get_width())
+        y = -self.jewels_images[jewel_image_index].get_height()
+
+        # Get the path to the selected jewel image
+        jewel_image_path = self.jewels_paths[jewel_image_index + 1]  # Adjust back to original index for path
+
+        return Jewel(
+            jewel_image_path,  # Pass the path directly
+            x,
+            y,
+            JEWEL_SPEED,
             WINDOW_HEIGHT
         )
 
@@ -252,6 +279,12 @@ class Game:
                         self.coins.add(coin)
                         self.all_sprites.add(coin)
 
+                if len(self.jewels) < MAX_JEWELS and random.random() < 0.05:
+                    jewel = self.create_jewel()
+                    if not pygame.sprite.spritecollideany(jewel, self.jewels) and not pygame.sprite.spritecollideany(jewel, self.coins) and not pygame.sprite.spritecollideany(jewel, self.monsters):
+                        self.jewels.add(jewel)
+                        self.all_sprites.add(jewel)
+
                 # --- Collision Detection ---
 
                 # --- Collision Detection ---
@@ -283,6 +316,15 @@ class Game:
                     sound.set_volume(volume)
                     sound.play()
 
+                for jewel in pygame.sprite.spritecollide(self.hero, self.jewels, True):
+                    self.score += jewel.value
+                    # Randomly play one of the two sounds
+                    sound = random.choice([self.PING, self.PONG])
+                    volume = math.log10(jewel.value + 1) / math.log10(26)
+                    sound.set_volume(volume)
+                    sound.play()
+
+
                 # --- Scrolling Background ---
                 self.bg_y += 2
                 if self.bg_y >= 0:  # When the second copy reaches the top
@@ -299,6 +341,11 @@ class Game:
             for coin in self.coins:
                 value_text = pygame.font.Font(None, FONT_SIZE // 2).render(str(coin.value), True, BLACK)
                 self.screen.blit(value_text, value_text.get_rect(center=coin.rect.center))
+
+            for jewel in self.jewels:
+                value_text = pygame.font.Font(None, FONT_SIZE // 2).render(str(jewel.value), True, BLACK)
+                self.screen.blit(value_text, value_text.get_rect(center=jewel.rect.center))
+
 
             self.display_score()
             self.display_life()
