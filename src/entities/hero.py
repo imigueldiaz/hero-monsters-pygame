@@ -5,6 +5,12 @@ class Hero(GameObject[GameObjectType]):
     def __init__(self, image_path: str, x: int, y: int, hero_speed: int, window_width: int):
         super().__init__(image_path, x, y, hero_speed)
         self.window_width = window_width
+        self.life = 10
+        self.inmunity = False
+        self.enhanced = False
+        self.collision_cooldown = 1000  # 1000 milliseconds = 1 second cooldown
+        self.last_collision_time = 0  # Track the last time a collision happened
+
 
     def update(self):
         keys = pygame.key.get_pressed()

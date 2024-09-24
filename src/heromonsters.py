@@ -79,6 +79,10 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.paused = False
+        self.blink_duration = 2000  # Blink for 2000 milliseconds (2 seconds)
+        self.blink_start_time = 0  # Time when the blinking starts
+        self.hero_is_blinking = False  # Flag to indicate if the hero is blinking
+
 
     def create_monster(self):
         x = random.randint(0, WINDOW_WIDTH - self.monster_image.get_width())
@@ -105,6 +109,9 @@ class Game:
         score_text = pygame.font.Font(None, FONT_SIZE).render(f"Score: {self.score}", True, WHITE)
         self.screen.blit(score_text, (10, 10))
 
+    def display_life(self):
+        life_text = pygame.font.Font(None, FONT_SIZE).render(f"Life: {self.hero.life}", True, WHITE)
+        self.screen.blit(life_text, (10, 50))
 
     def apply_ripple(self, surface, amplitude, frequency, speed, offset):
         """Apply a horizontal ripple effect to the given surface."""
@@ -197,6 +204,7 @@ class Game:
 
     def run(self):
         while self.running:
+            current_time = pygame.time.get_ticks()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
@@ -212,10 +220,25 @@ class Game:
                         else:
                             pygame.mixer.music.unpause()
 
-            if not self.game_over and not self.paused:
+            # Check if hero is blinking
+            if self.hero_is_blinking:
+                # Blink the hero
+                self.blink_hero()
+                # Check if blinking time is over
+                if current_time - self.blink_start_time >= self.blink_duration:
+                    self.hero_is_blinking = False  # Stop blinking
+
+
+            if not self.game_over and not self.paused and not self.hero_is_blinking:
                 # --- Update ---
 
                 self.all_sprites.update()
+
+                for monster in self.monsters:
+                    if monster.is_fading:
+                        if not monster.fade_out(current_time):
+                            self.monsters.remove(monster)
+                            self.all_sprites.remove(monster)
 
                 if len(self.monsters) < MAX_MONSTERS and random.random() < 0.06:
                     monster = self.create_monster()
@@ -231,9 +254,26 @@ class Game:
 
                 # --- Collision Detection ---
 
-                if pygame.sprite.spritecollideany(self.hero, self.monsters):
-                    self.HIT.play(4)
-                    self.game_over = True
+                # --- Collision Detection ---
+                colliding_monsters = pygame.sprite.spritecollide(self.hero, self.monsters, True)
+                if colliding_monsters:
+                    # Check if enough time has passed since the last collision
+                    if current_time - self.hero.last_collision_time > self.hero.collision_cooldown:
+                        if self.hero.life > 0:
+                            self.HIT.play(4)
+                            self.hero.life -= 1
+                            self.hero.last_collision_time = current_time  # Reset the collision timer
+                            self.blink_start_time = current_time  # Start the blinking timer
+                            self.hero_is_blinking = True  # Set the hero to blink
+                        # Remove the colliding monsters from the all_sprites group
+                        for monster in colliding_monsters:
+                            # Mark the monster for removal
+                            monster.is_fading = True
+                            monster.fade_start_time = current_time
+
+                    # Check if the hero has run out of life
+                    if self.hero.life == 0:
+                        self.game_over = True
 
                 for coin in pygame.sprite.spritecollide(self.hero, self.coins, True):
                     self.score += coin.value
@@ -261,6 +301,7 @@ class Game:
                 self.screen.blit(value_text, value_text.get_rect(center=coin.rect.center))
 
             self.display_score()
+            self.display_life()
 
             if self.game_over:
                 self.display_game_over()
