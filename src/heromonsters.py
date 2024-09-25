@@ -6,7 +6,7 @@ import math
 from entities import Hero, Monster, Coin, GameObjectType, Jewel
 
 # --- Constants ---
-WINDOW_WIDTH, WINDOW_HEIGHT = 600, 800
+WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 768
 FPS = 50
 HERO_SPEED = 5
 MONSTER_SPEED = 3
@@ -20,8 +20,8 @@ FONT_SIZE = 36
 # --- Colors ---
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
-GOLDENTRANS = (255, 215, 0, 50)
-REDFIRETRANS = (255, 36,0,40)
+GOLDENTRANS = (255, 215, 0, 100)
+REDFIRETRANS = (178, 34, 34, 80)
 
 # --- Paths ---
 BASE_PATH = os.path.dirname(__file__)
@@ -140,14 +140,18 @@ class Game:
         life_text = pygame.font.Font(None, FONT_SIZE).render(f"Life: {self.hero.life}", True, WHITE)
         self.screen.blit(life_text, (10, 50))
 
-    def apply_ripple(self, surface, amplitude, frequency, speed, offset):
-        """Apply a horizontal ripple effect to the given surface."""
+    def apply_flame_ripple(self, surface, base_amplitude, frequency, speed, offset):
+        """Apply a flame-like ripple effect to the given surface."""
         width, height = surface.get_size()
         new_surface = pygame.Surface((width, height), pygame.SRCALPHA)
 
         for y in range(height):
-            # Calculate horizontal distortion using a sine wave
-            distortion = int(amplitude * math.sin(2 * math.pi * frequency * (y / height) + offset))
+            # Add randomness to the amplitude to create more flame-like behavior
+            amplitude_variation = base_amplitude + random.uniform(-5, 5)  # Random variation for flame effect
+            wave = math.sin(frequency * y + offset)  # Wave distortion
+
+            # Add randomness to simulate the chaotic nature of flames
+            distortion = int(amplitude_variation * wave * math.cos(speed * offset + random.uniform(-0.2, 0.2)))
 
             for x in range(width):
                 # Make sure the distortion doesn't go out of bounds
@@ -161,15 +165,18 @@ class Game:
 
         return new_surface
 
+
     def blink_hero(self):
-        # Create a mask from the hero image
+        # Create a mask from the hero image (only the non-transparent pixels will be considered)
         mask = pygame.mask.from_surface(self.hero_image)
-        mask_surface = mask.to_surface(setcolor=GOLDENTRANS, unsetcolor=(0, 0, 0, 0))  # Golden mask
+        
+        # Create a surface from the mask where only non-transparent pixels will be highlighted
+        mask_surface = mask.to_surface(setcolor=GOLDENTRANS, unsetcolor=(0, 0, 0, 0))  # Golden mask for visible pixels
 
         # Ripple effect variables
-        ripple_amplitude = 20 # Smaller distortion for a subtle ripple effect
+        ripple_amplitude = 20  # Smaller distortion for a subtle ripple effect
         ripple_frequency = 30  # Adjust the number of ripples
-        ripple_speed = 0.2  # Speed of ripple movement
+        ripple_speed = 0.6  # Speed of ripple movement
         ripple_offset = pygame.time.get_ticks() * ripple_speed  # Animate the ripple over time
 
         # Create halo surfaces (one for golden, one for red)
@@ -182,8 +189,8 @@ class Game:
         pygame.draw.ellipse(halo_surface_red, REDFIRETRANS, halo_surface_red.get_rect())  # Red flaming halo
 
         # Apply the ripple effect to both halos
-        halo_surface_golden_rippled = self.apply_ripple(halo_surface_golden, ripple_amplitude, ripple_frequency, ripple_speed, ripple_offset)
-        halo_surface_red_rippled = self.apply_ripple(halo_surface_red, ripple_amplitude * 2, ripple_frequency, ripple_speed, ripple_offset)
+        halo_surface_golden_rippled = self.apply_flame_ripple(halo_surface_golden, ripple_amplitude, ripple_frequency, ripple_speed, ripple_offset)
+        halo_surface_red_rippled = self.apply_flame_ripple(halo_surface_red, ripple_amplitude, ripple_frequency, ripple_speed, ripple_offset)
 
         # Position the halos behind the hero
         golden_halo_rect = halo_surface_golden_rippled.get_rect(center=self.hero.rect.center)
@@ -191,14 +198,16 @@ class Game:
 
         # Blinking effect (both halos blink at the same time)
         if pygame.time.get_ticks() % 1000 < 500:
-            self.screen.blit(mask_surface, self.hero.rect)
+            # Draw the mask only where non-transparent pixels exist
+            self.screen.blit(mask_surface, self.hero.rect.topleft)
         else:
             # Blit the red halo first, then the golden halo, then the hero image
             self.screen.blit(halo_surface_red_rippled, red_halo_rect)     # Red flaming halo with ripple
             self.screen.blit(halo_surface_golden_rippled, golden_halo_rect)  # Golden halo with ripple
-            self.screen.blit(mask_surface, self.hero.rect)        # Hero mask with golden color
+            self.screen.blit(mask_surface, self.hero.rect.topleft)        # Hero mask with golden color
 
         pygame.display.flip()
+
 
 
 
@@ -279,9 +288,14 @@ class Game:
                         self.coins.add(coin)
                         self.all_sprites.add(coin)
 
-                if len(self.jewels) < MAX_JEWELS and random.random() < 0.05:
+                if len(self.jewels) < MAX_JEWELS and random.random() < 0.005:
                     jewel = self.create_jewel()
-                    if not pygame.sprite.spritecollideany(jewel, self.jewels) and not pygame.sprite.spritecollideany(jewel, self.coins) and not pygame.sprite.spritecollideany(jewel, self.monsters):
+
+                    if all(
+                        not pygame.sprite.spritecollideany(jewel, group) 
+                        for group in [self.jewels, self.coins, self.monsters]
+                    ):
+
                         self.jewels.add(jewel)
                         self.all_sprites.add(jewel)
 
