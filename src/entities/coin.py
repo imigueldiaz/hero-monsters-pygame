@@ -8,13 +8,17 @@ class Coin(GameObject[GameObjectType]):
         super().__init__(image_path, x, y, speed)
         self.window_height = window_height
 
-        # Apply a random color mask
-        random_color = (
-            random.randint(150, 255),  # Red
-            random.randint(150, 255),  # Green
-            random.randint(150, 255)   # Blue
-        )
-        self.apply_color_mask(random_color)
+        change_color = random.random() < 0.5  # 50% chance to change color
+
+        if change_color:
+            # Apply a random color mask
+            random_color = (
+                random.randint(150, 255),  # Red
+                random.randint(150, 255),  # Green
+                random.randint(150, 255)   # Blue
+            )
+
+            self.apply_color_mask(random_color)
 
         # Assign a random value to the coin
         self.value = random.randint(1, 25)

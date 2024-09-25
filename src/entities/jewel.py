@@ -9,6 +9,7 @@ class Jewel(Coin):
         super().__init__(image_path, x, y, speed, window_height)
         self.window_height = window_height
 
+        # Use random.random() instead of non-existent random.randbool()
         change_color = random.random() < 0.5  # 50% chance to change color
 
         if change_color:
@@ -18,14 +19,13 @@ class Jewel(Coin):
                 random.randint(150, 255),  # Green
                 random.randint(150, 255)   # Blue
             )
-
             self.apply_color_mask(random_color)
 
-        # Assign a random value to the coin
+        # Assign a random value to the jewel
         self.value = random.randint(50, 100)
 
     def apply_color_mask(self, color):
-        """Applies a color mask to the coin image."""
+        """Applies a color mask to the jewel image."""
         colored_image = self.image.copy()
         colored_image.fill(color, special_flags=pygame.BLEND_RGB_MULT)
         self.image = colored_image
@@ -34,3 +34,4 @@ class Jewel(Coin):
         self.rect.y += self.speed
         if self.rect.top > self.window_height:
             self.kill()
+
