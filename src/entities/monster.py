@@ -5,8 +5,9 @@ class Monster(GameObject[GameObjectType]):
         super().__init__(image_path, x, y, monster_speed)
         self.window_height = window_height
         self.fade_start_time = 0
-        self.fade_duration = 1000  # Fade out over 1 second
+        self.fade_duration = 1500  # Fade out over 1 second
         self.is_fading = False
+        self.damage = 1
 
     def fade_out(self, current_time):
         fade_progress = (current_time - self.fade_start_time) / self.fade_duration

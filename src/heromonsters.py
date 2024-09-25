@@ -14,7 +14,7 @@ COIN_SPEED = 5
 JEWEL_SPEED = 7
 MAX_MONSTERS = 5
 MAX_COINS = 3
-MAX_JEWELS = 2
+MAX_JEWELS = 1
 FONT_SIZE = 36
 
 # --- Colors ---
@@ -286,20 +286,20 @@ class Game:
                         self.all_sprites.add(jewel)
 
                 # --- Collision Detection ---
-
-                # --- Collision Detection ---
                 colliding_monsters = pygame.sprite.spritecollide(self.hero, self.monsters, True)
                 if colliding_monsters:
                     # Check if enough time has passed since the last collision
                     if current_time - self.hero.last_collision_time > self.hero.collision_cooldown:
                         if self.hero.life > 0:
                             self.HIT.play(4)
-                            self.hero.life -= 1
                             self.hero.last_collision_time = current_time  # Reset the collision timer
                             self.blink_start_time = current_time  # Start the blinking timer
                             self.hero_is_blinking = True  # Set the hero to blink
                         # Remove the colliding monsters from the all_sprites group
                         for monster in colliding_monsters:
+
+                            self.hero.life -= monster.damage  # Decrease hero life
+
                             # Mark the monster for removal
                             monster.is_fading = True
                             monster.fade_start_time = current_time
