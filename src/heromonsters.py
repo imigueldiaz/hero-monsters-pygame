@@ -49,7 +49,10 @@ class Game:
         self.monster_image = pygame.image.load(os.path.join(SPRITES_PATH, 'monster.png')).convert_alpha()
         self.coin_image = pygame.image.load(os.path.join(SPRITES_PATH, 'coin.png')).convert_alpha()
         self.jewels_images = []
-        self.jewels_paths = {}  
+        self.jewels_paths = {}
+        self.collected_jewels = 0
+        self.collected_coins = 0
+
 
         #Load the four jewel images
         for i in range(1, 5):
@@ -93,6 +96,7 @@ class Game:
         self.blink_duration = 2000  # Blink for 2000 milliseconds (2 seconds)
         self.blink_start_time = 0  # Time when the blinking starts
         self.hero_is_blinking = False  # Flag to indicate if the hero is blinking
+        self.level = 1
 
 
     def create_monster(self):
@@ -139,6 +143,17 @@ class Game:
     def display_life(self):
         life_text = pygame.font.Font(None, FONT_SIZE).render(f"Life: {self.hero.life}", True, WHITE)
         self.screen.blit(life_text, (10, 50))
+    def display_level(self):
+        level_text = pygame.font.Font(None, FONT_SIZE).render(f"Level: {self.level}", True, WHITE)
+        self.screen.blit(level_text, (10, 90))
+    def display_coins(self):
+        coins_text = pygame.font.Font(None, FONT_SIZE).render(f"Coins: {self.collected_coins}", True, WHITE)
+        self.screen.blit(coins_text, (10, 130))
+    def display_jewels(self):
+        jewels_text = pygame.font.Font(None, FONT_SIZE).render(f"Jewels: {self.collected_jewels}", True, WHITE)
+        self.screen.blit(jewels_text, (10, 170))
+
+
 
     def apply_flame_ripple(self, surface, base_amplitude, frequency, speed, offset):
         """Apply a flame-like ripple effect to the given surface."""
@@ -226,6 +241,10 @@ class Game:
         self.all_sprites.empty()
         self.monsters.empty()
         self.coins.empty()
+        self.jewels.empty()
+        self.level = 1
+        self.collected_coins = 0
+        self.collected_jewels = 0
 
         # Create hero with the full image path
         self.hero = Hero(
@@ -309,6 +328,7 @@ class Game:
                             self.hero.last_collision_time = current_time  # Reset the collision timer
                             self.blink_start_time = current_time  # Start the blinking timer
                             self.hero_is_blinking = True  # Set the hero to blink
+
                         # Remove the colliding monsters from the all_sprites group
                         for monster in colliding_monsters:
 
@@ -324,6 +344,8 @@ class Game:
 
                 for coin in pygame.sprite.spritecollide(self.hero, self.coins, True):
                     self.score += coin.value
+                    self.collected_coins += 1
+
                     # Randomly play one of the two sounds
                     sound = random.choice([self.PING, self.PONG])
                     volume = math.log10(coin.value + 1) / math.log10(26)  # Volume from 0 to 1
@@ -332,6 +354,8 @@ class Game:
 
                 for jewel in pygame.sprite.spritecollide(self.hero, self.jewels, True):
                     self.score += jewel.value
+                    self.collected_jewels += 1
+
                     # Randomly play one of the two sounds
                     sound = random.choice([self.PING, self.PONG])
                     volume = math.log10(jewel.value + 1) / math.log10(26)
@@ -363,6 +387,9 @@ class Game:
 
             self.display_score()
             self.display_life()
+            self.display_level()
+            self.display_coins()
+            self.display_jewels()
 
             if self.game_over:
                 self.display_game_over()
