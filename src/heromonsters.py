@@ -6,20 +6,27 @@ import math
 from entities import Hero, Monster, Coin, GameObjectType, Jewel
 
 # --- Constants ---
+
+# --- Screen Dimensions ---
 WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 768
 FPS = 50
+
+# --- Speeds ---
 HERO_SPEED = 5
 MONSTER_SPEED = 3
 COIN_SPEED = 5
 JEWEL_SPEED = 7
+
+# --- Limits ---
 MAX_MONSTERS = 5
 MAX_COINS = 3
 MAX_JEWELS = 1
-FONT_SIZE = 36
+FONT_SIZE = 24
 
 # --- Colors ---
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
+WHITETRANS = (200, 200, 200, 100)
 GOLDENTRANS = (255, 215, 0, 100)
 REDFIRETRANS = (178, 34, 34, 80)
 
@@ -27,13 +34,64 @@ REDFIRETRANS = (178, 34, 34, 80)
 BASE_PATH = os.path.dirname(__file__)
 SPRITES_PATH = os.path.join(BASE_PATH, '../assets/images')
 SOUNDS_PATH = os.path.join(BASE_PATH, '../assets/music')
+FONTS_PATH = os.path.join(BASE_PATH, '../assets/fonts')
 
 
 class Game:
-    def __init__(self):
+    """
+    Game class represents the main game logic and handles the initialization, asset loading, game loop, and rendering.
+    Methods:
+        __init__(): Initializes the game by setting up the display, loading assets, and initializing game variables.
+        __load_game_assets(): Loads game assets such as sprites and initializes sprite groups.
+        __load_game_sounds(): Loads game sounds and music.
+        create_monster() -> Monster: Creates and returns a new monster instance.
+        create_coin() -> Coin: Creates and returns a new coin instance.
+        create_jewel() -> Jewel: Creates and returns a new jewel instance.
+        display_score(): Displays the current score on the screen.
+        display_life(): Displays the hero's remaining life on the screen.
+        display_level(): Displays the current game level on the screen.
+        display_coins(): Displays the number of collected coins on the screen.
+        display_jewels(): Displays the number of collected jewels on the screen.
+        display_game_over(): Displays the game over message and handles the hero's blinking effect.
+        apply_flame_ripple(surface, base_amplitude, frequency, speed, offset): Applies a flame-like ripple effect to the given surface.
+        blink_hero(): Handles the hero's blinking effect with a ripple and halo animation.
+        reset_game(): Resets the game state to start a new game.
+        run(): The main game loop that handles events, updates game state, and renders the game.
+    """
+    def __init__(self) -> None:
+        """
+        Initializes the game by setting up the display, loading assets, and initializing game variables.
+        Attributes:
+            screen (pygame.Surface): The main display surface.
+            emoji_font (pygame.font.Font): The font used for displaying emojis.
+            bg_image (pygame.Surface): The background image.
+            bg_width (int): The width of the background image.
+            bg_height (int): The height of the background image.
+            bg_x (int): The x-coordinate for background scrolling.
+            bg_y (int): The y-coordinate for background scrolling.
+            hero_image (pygame.Surface): The image of the hero character.
+            monster_image (pygame.Surface): The image of the monster character.
+            coin_image (pygame.Surface): The image of the coin.
+            jewels_images (list): List of jewel images.
+            jewels_paths (dict): Dictionary mapping jewel indices to their file paths.
+            collected_jewels (int): Counter for collected jewels.
+            collected_coins (int): Counter for collected coins.
+            score (int): The player's score.
+            game_over (bool): Flag indicating if the game is over.
+            clock (pygame.time.Clock): The game clock.
+            running (bool): Flag indicating if the game is running.
+            paused (bool): Flag indicating if the game is paused.
+            blink_duration (int): Duration for which the hero blinks (in milliseconds).
+            blink_start_time (int): Time when the blinking starts.
+            hero_is_blinking (bool): Flag to indicate if the hero is blinking.
+            level (int): The current game level.
+        """
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Hero vs Monsters")
+
+        # Load font
+        self.emoji_font = pygame.font.Font(os.path.join(FONTS_PATH, 'Symbola.ttf') , FONT_SIZE)
 
         # Load images
         self.bg_image = pygame.image.load(os.path.join(SPRITES_PATH, 'bg.png')).convert()
@@ -63,7 +121,32 @@ class Game:
         # Set the hero image as the window icon
         pygame.display.set_icon(self.hero_image)
 
-        # Sprite groups
+        # Load game assets
+        self.__load_game_assets()
+
+        # Load music and sound effects
+        self.__load_game_sounds()
+
+        self.score = 0
+        self.game_over = False
+
+        self.clock = pygame.time.Clock()
+        self.running = True
+        self.paused = False
+        self.blink_duration = 2000  # Blink for 2000 milliseconds (2 seconds)
+        self.blink_start_time = 0  # Time when the blinking starts
+        self.hero_is_blinking = False  # Flag to indicate if the hero is blinking
+        self.level = 1
+
+    def __load_game_assets(self) -> None:
+        """
+        Loads and initializes game assets including sprite groups and the hero character.
+        This method performs the following tasks:
+        - Initializes sprite groups for all sprites, monsters, coins, and jewels.
+        - Creates the hero character with specified image, position, speed, and window constraints.
+        - Adds the hero character to the all_sprites group.
+        """
+         # Sprite groups
         self.all_sprites = pygame.sprite.Group()
         self.monsters = pygame.sprite.Group()
         self.coins = pygame.sprite.Group()
@@ -78,8 +161,16 @@ class Game:
             WINDOW_WIDTH
         )
         self.all_sprites.add(self.hero)
-
-        # Load music and sound effects
+    
+    def __load_game_sounds(self) -> None:
+        """
+        Loads and initializes the game sounds.
+        This method loads the background music and plays it in a loop. It also loads
+        the sound effects for 'ping', 'pong', and 'hit' actions, making them available
+        for use in the game.
+        Returns:
+            None
+        """
         pygame.mixer.music.load(os.path.join(SOUNDS_PATH, 'sound.mp3'))
         pygame.mixer.music.play(-1)
 
@@ -87,19 +178,14 @@ class Game:
         self.PONG = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping02.mp3'))
         self.HIT = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'hit01.mp3'))
 
-        self.score = 0
-        self.game_over = False
+    def create_monster(self) -> Monster:
+        """
+        Creates a new monster instance with a random horizontal position.
 
-        self.clock = pygame.time.Clock()
-        self.running = True
-        self.paused = False
-        self.blink_duration = 2000  # Blink for 2000 milliseconds (2 seconds)
-        self.blink_start_time = 0  # Time when the blinking starts
-        self.hero_is_blinking = False  # Flag to indicate if the hero is blinking
-        self.level = 1
-
-
-    def create_monster(self):
+        Returns:
+            Monster: A new Monster object initialized with the specified image path, 
+                     random x-coordinate, y-coordinate set to 0, speed, and window height.
+        """
         x = random.randint(0, WINDOW_WIDTH - self.monster_image.get_width())
         return Monster(
             os.path.join(SPRITES_PATH, 'monster.png'),  # Pass the full path for the monster image
@@ -109,7 +195,13 @@ class Game:
             WINDOW_HEIGHT
         )
 
-    def create_coin(self):
+    def create_coin(self) -> Coin:
+        """
+        Create a new Coin object positioned randomly along the x-axis and just above the top of the screen.
+
+        Returns:
+            Coin: A new Coin object with its image, initial position, speed, and screen height set.
+        """
         x = random.randint(0, WINDOW_WIDTH - self.coin_image.get_width())
         y = -self.coin_image.get_height()  # Initialize outside the screen, above
         return Coin(
@@ -119,7 +211,15 @@ class Game:
             COIN_SPEED,
             WINDOW_HEIGHT
         )
-    def create_jewel(self):
+    def create_jewel(self) -> Jewel:
+        """
+        Creates a new Jewel object with a randomly selected image and initial position.
+        The jewel image is randomly chosen from a predefined list of jewel images.
+        The initial position of the jewel is set to a random x-coordinate within the window width,
+        and the y-coordinate is set to just above the top of the window.
+        Returns:
+            Jewel: A new Jewel object with the selected image, initial position, speed, and window height.
+        """
         # Randomly select one of the four jewel images
         jewel_image_index = random.choice(range(1, 5)) - 1  # Adjust for zero-indexing
         x = random.randint(0, WINDOW_WIDTH - self.jewels_images[jewel_image_index].get_width())
@@ -136,26 +236,100 @@ class Game:
             WINDOW_HEIGHT
         )
 
-    def display_score(self):
-        score_text = pygame.font.Font(None, FONT_SIZE).render(f"Score: {self.score}", True, WHITE)
+    def display_score(self) -> None:
+        """
+        Renders and displays the current score on the screen.
+
+        This method uses the `emoji_font` to render the score with an emoji
+        and then blits it onto the screen at a fixed position (10, 10).
+
+        Returns:
+            None
+        """
+        score_text = self.emoji_font.render(f"🏆 {self.score}", True, WHITETRANS)
         self.screen.blit(score_text, (10, 10))
 
-    def display_life(self):
-        life_text = pygame.font.Font(None, FONT_SIZE).render(f"Life: {self.hero.life}", True, WHITE)
+    def display_life(self) -> None:
+        """
+        Displays the hero's life on the screen using an emoji font.
+
+        This method renders the hero's current life as a text string with a heart emoji
+        and blits it onto the screen at a fixed position.
+
+        Returns:
+            None
+        """
+        life_text = self.emoji_font.render(f"❤️ {self.hero.life}", True, WHITETRANS)
         self.screen.blit(life_text, (10, 50))
-    def display_level(self):
-        level_text = pygame.font.Font(None, FONT_SIZE).render(f"Level: {self.level}", True, WHITE)
+
+    def display_level(self) -> None:
+        """
+        Renders and displays the current level on the screen using an emoji font.
+
+        The level is displayed at a fixed position (10, 90) on the screen with a white transparent color.
+
+        Returns:
+            None
+        """
+        level_text = self.emoji_font.render(f"📈 {self.level}", True, WHITETRANS)
         self.screen.blit(level_text, (10, 90))
-    def display_coins(self):
-        coins_text = pygame.font.Font(None, FONT_SIZE).render(f"Coins: {self.collected_coins}", True, WHITE)
+
+    def display_coins(self) -> None:
+        """
+        Renders and displays the number of collected coins on the screen.
+
+        This method uses the emoji font to render the coin count with a coin emoji
+        and blits it onto the screen at a fixed position.
+
+        Returns:
+            None
+        """
+        coins_text = self.emoji_font.render(f"🪙 {self.collected_coins}", True, WHITETRANS)
         self.screen.blit(coins_text, (10, 130))
-    def display_jewels(self):
-        jewels_text = pygame.font.Font(None, FONT_SIZE).render(f"Jewels: {self.collected_jewels}", True, WHITE)
+
+    def display_jewels(self) -> None:
+        """
+        Renders and displays the number of collected jewels on the screen.
+
+        This method uses the emoji font to render the number of collected jewels
+        and blits the rendered text onto the screen at a fixed position.
+
+        Returns:
+            None
+        """
+        jewels_text = self.emoji_font.render(f"💎 {self.collected_jewels}", True, WHITETRANS)
         self.screen.blit(jewels_text, (10, 170))
+    
+    def display_game_over(self) -> None:
+        """
+        Displays the game over screen with a blinking hero and a message prompting the player to press Space to restart.
+        This method renders a "Game Over" message with an emoji font and blits it to the center of the screen. 
+        It also calls the blink_hero method to create a blinking effect on the hero character.
+        Returns:
+            None
+        """
+        self.blink_hero()
+
+        game_over_text = self.emoji_font.render("💀 Game Over! Press Space to Restart", True, WHITETRANS)
+        text_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
+        self.screen.blit(game_over_text, text_rect)
+
+        pygame.display.flip()
 
 
 
-    def apply_flame_ripple(self, surface, base_amplitude, frequency, speed, offset):
+    def apply_flame_ripple(self, surface, base_amplitude, frequency, speed, offset) -> pygame.Surface:
+        """
+        Apply a flame-like ripple effect to the given surface.
+        Args:
+            surface (pygame.Surface): The surface to which the ripple effect will be applied.
+            base_amplitude (float): The base amplitude of the ripple effect.
+            frequency (float): The frequency of the ripple effect.
+            speed (float): The speed at which the ripple effect moves.
+            offset (float): The offset to start the ripple effect.
+        Returns:
+            pygame.Surface: A new surface with the flame-like ripple effect applied.
+        """
         """Apply a flame-like ripple effect to the given surface."""
         width, height = surface.get_size()
         new_surface = pygame.Surface((width, height), pygame.SRCALPHA)
@@ -181,7 +355,24 @@ class Game:
         return new_surface
 
 
-    def blink_hero(self):
+    def blink_hero(self) -> None:
+        """
+        Creates a blinking effect for the hero character by applying a ripple effect to halos and alternating their visibility.
+        This method performs the following steps:
+        1. Creates a mask from the hero image to identify non-transparent pixels.
+        2. Generates a surface from the mask with a golden color for visible pixels.
+        3. Defines ripple effect variables for amplitude, frequency, speed, and offset.
+        4. Creates two halo surfaces (golden and red) with adjusted sizes.
+        5. Applies the ripple effect to both halo surfaces.
+        6. Positions the halos behind the hero.
+        7. Alternates the visibility of the halos and the hero mask to create a blinking effect.
+        The blinking effect is achieved by checking the current time in milliseconds and toggling the visibility of the halos and the hero mask every 500 milliseconds.
+        Note:
+            - The method uses the `apply_flame_ripple` function to apply the ripple effect to the halo surfaces.
+            - The `pygame.display.flip()` function is called at the end to update the display.
+        Returns:
+            None
+        """
         # Create a mask from the hero image (only the non-transparent pixels will be considered)
         mask = pygame.mask.from_surface(self.hero_image)
         
@@ -226,16 +417,20 @@ class Game:
 
 
 
-    def display_game_over(self):
-        self.blink_hero()
+    
 
-        game_over_text = pygame.font.Font(None, FONT_SIZE).render("Game Over! Press Space to Restart", True, WHITE)
-        text_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
-        self.screen.blit(game_over_text, text_rect)
-
-        pygame.display.flip()  # Update the display to show the game over message
-
-    def reset_game(self):
+    def reset_game(self) -> None:
+        """
+        Resets the game state to its initial conditions.
+        This method performs the following actions:
+        - Resets the score to 0.
+        - Sets the game_over flag to False.
+        - Empties all sprite groups (all_sprites, monsters, coins, jewels).
+        - Resets the level to 1.
+        - Resets the collected coins and jewels counters to 0.
+        - Creates a new hero instance and adds it to the all_sprites group.
+        The hero is created with the full image path and positioned at the bottom center of the window.
+        """
         self.score = 0
         self.game_over = False
         self.all_sprites.empty()
@@ -257,7 +452,19 @@ class Game:
         self.all_sprites.add(self.hero)
 
 
-    def run(self):
+    def run(self) -> None:
+        """
+        Main game loop that handles events, updates game state, and renders the screen.
+        This method performs the following tasks:
+        - Handles user input events such as quitting the game, pausing, and resetting.
+        - Manages the hero's blinking state after collisions.
+        - Updates game entities including monsters, coins, and jewels.
+        - Handles collision detection between the hero and other entities.
+        - Manages the scrolling background.
+        - Draws all game entities and UI elements on the screen.
+        - Controls the game frame rate and updates the display.
+        The loop continues running until the game is quit or the `self.running` flag is set to False.
+        """
         while self.running:
             current_time = pygame.time.get_ticks()
             for event in pygame.event.get():
