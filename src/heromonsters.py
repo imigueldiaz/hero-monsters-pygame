@@ -174,8 +174,8 @@ class Game:
         pygame.mixer.music.load(os.path.join(SOUNDS_PATH, 'sound.mp3'))
         pygame.mixer.music.play(-1)
 
-        self.PING = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping01.mp3'))
-        self.PONG = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping02.mp3'))
+        self.COINSOUND = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping01.mp3'))
+        self.JEWELSOUND = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping02.mp3'))
         self.HIT = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'hit01.mp3'))
 
     def create_monster(self) -> Monster:
@@ -414,11 +414,6 @@ class Game:
 
         pygame.display.flip()
 
-
-
-
-    
-
     def reset_game(self) -> None:
         """
         Resets the game state to its initial conditions.
@@ -492,8 +487,8 @@ class Game:
 
 
             if not self.game_over and not self.paused and not self.hero_is_blinking:
+                
                 # --- Update ---
-
                 self.all_sprites.update()
 
                 for monster in self.monsters:
@@ -553,8 +548,8 @@ class Game:
                     self.score += coin.value
                     self.collected_coins += 1
 
-                    # Randomly play one of the two sounds
-                    sound = random.choice([self.PING, self.PONG])
+                    # Play the coin sound with volume based on the coin value
+                    sound = self.COINSOUND
                     volume = math.log10(coin.value + 1) / math.log10(26)  # Volume from 0 to 1
                     sound.set_volume(volume)
                     sound.play()
@@ -563,9 +558,9 @@ class Game:
                     self.score += jewel.value
                     self.collected_jewels += 1
 
-                    # Randomly play one of the two sounds
-                    sound = random.choice([self.PING, self.PONG])
-                    volume = math.log10(jewel.value + 1) / math.log10(26)
+                    # Play the jewel sound with volume based on the jewel value
+                    sound = self.JEWELSOUND
+                    volume = math.log10(jewel.value + 1) / math.log10(100)
                     sound.set_volume(volume)
                     sound.play()
 
