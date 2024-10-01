@@ -21,6 +21,8 @@ JEWEL_SPEED = 7
 MAX_MONSTERS = 5
 MAX_COINS = 3
 MAX_JEWELS = 1
+
+# --- Font ---
 FONT_SIZE = 24
 
 # --- Colors ---
@@ -36,6 +38,8 @@ SPRITES_PATH = os.path.join(BASE_PATH, '../assets/images')
 SOUNDS_PATH = os.path.join(BASE_PATH, '../assets/music')
 FONTS_PATH = os.path.join(BASE_PATH, '../assets/fonts')
 
+# --- Miscellaneous ---
+HIT_SOUND_TIMES = 3
 
 class Game:
     """
@@ -136,7 +140,7 @@ class Game:
         self.blink_duration = 2000  # Blink for 2000 milliseconds (2 seconds)
         self.blink_start_time = 0  # Time when the blinking starts
         self.hero_is_blinking = False  # Flag to indicate if the hero is blinking
-        self.level = 1
+        self.level = 1 # Initial game level
 
     def __load_game_assets(self) -> None:
         """
@@ -442,10 +446,40 @@ class Game:
             WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
             WINDOW_HEIGHT - self.hero_image.get_height() - 10,
             HERO_SPEED,
-            WINDOW_WIDTH  # Make sure to pass window_width here
+            WINDOW_WIDTH
         )
         self.all_sprites.add(self.hero)
 
+    def handle_monster_collision(self, colliding_monsters, current_time):
+                            """
+                            Handles the collision between the hero and monsters.
+                            
+                            Args:
+                                colliding_monsters (list): List of monsters colliding with the hero.
+                                current_time (int): The current time in milliseconds.
+                            
+                            Returns:
+                                None
+                            """
+                            # Check if enough time has passed since the last collision
+                            if current_time - self.hero.last_collision_time > self.hero.collision_cooldown:
+                                if self.hero.life > 0:
+                                    self.HIT.play(HIT_SOUND_TIMES)
+                                    self.hero.last_collision_time = current_time  # Reset the collision timer
+                                    self.blink_start_time = current_time  # Start the blinking timer
+                                    self.hero_is_blinking = True  # Set the hero to blink
+
+                                # Remove the colliding monsters from the all_sprites group
+                                for monster in colliding_monsters:
+                                    self.hero.life -= monster.damage  # Decrease hero life
+
+                                    # Mark the monster for removal
+                                    monster.is_fading = True
+                                monster.fade_start_time = current_time
+                                
+                                 # Check if the hero has run out of life
+                                if self.hero.life == 0:
+                                    self.game_over = True
 
     def run(self) -> None:
         """
@@ -499,7 +533,7 @@ class Game:
 
                 if len(self.monsters) < MAX_MONSTERS and random.random() < 0.06:
                     monster = self.create_monster()
-                    if not pygame.sprite.spritecollideany(monster, self.monsters) and not pygame.sprite.spritecollideany(monster, self.coins):
+                    if not pygame.sprite.spritecollideany(monster, self.monsters | self.coins):
                         self.monsters.add(monster)
                         self.all_sprites.add(monster)
 
@@ -523,26 +557,9 @@ class Game:
                 # --- Collision Detection ---
                 colliding_monsters = pygame.sprite.spritecollide(self.hero, self.monsters, True)
                 if colliding_monsters:
-                    # Check if enough time has passed since the last collision
-                    if current_time - self.hero.last_collision_time > self.hero.collision_cooldown:
-                        if self.hero.life > 0:
-                            self.HIT.play(4)
-                            self.hero.last_collision_time = current_time  # Reset the collision timer
-                            self.blink_start_time = current_time  # Start the blinking timer
-                            self.hero_is_blinking = True  # Set the hero to blink
+                    self.handle_monster_collision(colliding_monsters, current_time)
 
-                        # Remove the colliding monsters from the all_sprites group
-                        for monster in colliding_monsters:
-
-                            self.hero.life -= monster.damage  # Decrease hero life
-
-                            # Mark the monster for removal
-                            monster.is_fading = True
-                            monster.fade_start_time = current_time
-
-                    # Check if the hero has run out of life
-                    if self.hero.life == 0:
-                        self.game_over = True
+                   
 
                 for coin in pygame.sprite.spritecollide(self.hero, self.coins, True):
                     self.score += coin.value
