@@ -65,6 +65,12 @@ class Monster(GameObject[GameObjectType]):
         self.window_height = window_height
         # the damage value is extracted from the image file name
         self.damage = int(''.join(filter(str.isdigit, random_image))) if any(char.isdigit() for char in random_image) else 1
+        
+        #resize the image based on the monster's damage
+        new_width = int(self.rect.width * (1 + (self.damage / 10)))
+        new_height = int(self.rect.height * (1 + (self.damage / 10)))
+        self.image = pygame.transform.scale(self.image, (new_width, new_height))
+        
     
     def calculate_weights(self, image_files):
         """
