@@ -1,5 +1,8 @@
-import pygame
+import os
+import random
 from .gameobject import GameObject, GameObjectType
+import pygame
+
 
 class Monster(GameObject[GameObjectType]):
     """
@@ -18,12 +21,12 @@ class Monster(GameObject[GameObjectType]):
         update():
             Updates the monster's position and handles its fade out and removal.
     """
-    def __init__(self, image_path: str, x: int, y: int, monster_speed: int, window_height: int) -> None:
+    def __init__(self, image_folder: str, x: int, y: int, monster_speed: int, window_height: int) -> None:
         """
         Initialize a Monster entity.
 
         Args:
-            image_path (str): The file path to the monster's image.
+            image_path (str): The folder path to the monster's images.
             x (int): The initial x-coordinate of the monster.
             y (int): The initial y-coordinate of the monster.
             monster_speed (int): The speed at which the monster moves.
@@ -36,49 +39,83 @@ class Monster(GameObject[GameObjectType]):
             is_fading (bool): Indicates whether the monster is currently fading.
             damage (int): The amount of damage the monster can inflict.
         """
-        super().__init__(image_path, x, y, monster_speed)
-        self.window_height = window_height
-        self.fade_start_time = 0
-        self.fade_duration = 1500  # Fade out over 1 second
-        self.is_fading = False
-        self.damage = 1
+        # Select a random image from the provided folder
+        image_files = [
+            f for f in os.listdir(image_folder)
+            if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))
+        ]
 
-    def fade_out(self, current_time) -> bool:
+        if not image_files:
+            raise ValueError("No valid image files found in the specified folder")
+
+        # Calculate weights for image selection
+        weights = self.calculate_weights(image_files)
+        
+        # Choose a random image from the list, with calculated weights
+        random_image = random.choices(image_files, weights=weights, k=1)[0]
+        image_path = os.path.join(image_folder, random_image)
+        
+        # Load the image and initialize the parent class
+        super().__init__(image_path, x, y, monster_speed)
+       
+        # Initialize fade out attributes
+        self.fade_start_time = None
+        self.fade_duration = 1000  # Default fade duration in milliseconds
+        self.is_fading = False
+        self.window_height = window_height
+        # the damage value is extracted from the image file name
+        self.damage = int(''.join(filter(str.isdigit, random_image))) if any(char.isdigit() for char in random_image) else 1
+    
+    def calculate_weights(self, image_files):
         """
-        Gradually fades out the monster's image over a specified duration.
+        Calculate weights based on the numeric values extracted from image file names.
+
+        This method processes a list of image file names, extracts numeric values from each file name,
+        and calculates a weight for each image. The weight is inversely proportional to the extracted
+        numeric value plus one, to avoid division by zero.
 
         Args:
-            current_time (int): The current time in milliseconds.
+            image_files (list of str): A list of image file names.
 
         Returns:
-            bool: False if the fade out is complete, True if still fading out.
+            list of float: A list of calculated weights corresponding to each image file.
         """
-        fade_progress = (current_time - self.fade_start_time) / self.fade_duration
-        if fade_progress >= 1:
-            return False  # Fade out complete
-        alpha = 255 - int(255 * fade_progress)
-        self.image.set_alpha(alpha)
-        return True  # Still fading out
+        weights = []
+        for image in image_files:
+            number_str = ''.join(filter(str.isdigit, image))
+            if number_str:
+                damage_value = int(number_str)
+            else:
+                damage_value = 1  # Default value if no number is found
+            weights.append(1 / (damage_value + 1))  # Adding 1 to avoid division by zero
+        return weights    
+        
+
+    def fade_out(self, current_time) -> None:
+        """
+        Starts the fade-out effect for the monster.
+        Args:
+            current_time (int): The current time in milliseconds.
+        """
+        self.is_fading = True
+        self.fade_start_time = current_time
 
     def update(self) -> None:
         """
-        Update the monster's position and handle fading out.
-        This method updates the vertical position of the monster based on its speed.
-        If the monster moves beyond the bottom of the window, it is removed from the game.
-        Additionally, if the monster is in the process of fading out, it checks the current
-        time and continues the fade out process. If the fade out is complete, the monster
-        is removed from the game.
-        Attributes:
-            rect (pygame.Rect): The rectangle representing the monster's position and size.
-            speed (int): The speed at which the monster moves vertically.
-            window_height (int): The height of the game window.
-            is_fading (bool): A flag indicating whether the monster is fading out.
+        Updates the state of the monster, including handling the fade-out effect.
+        Args:
+            current_time (int): The current time in milliseconds.
         """
         self.rect.y += self.speed
+        
+        # Check if the monster is fading out or if it has to fade out simulate the fade out effect
+        if self.is_fading:
+            elapsed_time = pygame.time.get_ticks() - self.fade_start_time
+            alpha = 255 - int(255 * elapsed_time / self.fade_duration)
+            self.image.set_alpha(alpha)
+            if alpha <= 0:
+                self.kill()
+        
         if self.rect.top > self.window_height:
             self.kill()
-
-        if self.is_fading:
-            current_time = pygame.time.get_ticks()
-            if not self.fade_out(current_time):
-                self.kill()  # Remove the sprite when the fade out is complete
+    

@@ -37,6 +37,8 @@ BASE_PATH = os.path.dirname(__file__)
 SPRITES_PATH = os.path.join(BASE_PATH, '../assets/images')
 SOUNDS_PATH = os.path.join(BASE_PATH, '../assets/music')
 FONTS_PATH = os.path.join(BASE_PATH, '../assets/fonts')
+MONSTERS_PATH = os.path.join(SPRITES_PATH, 'monsters')
+POTIONS_PATH = os.path.join(SPRITES_PATH, 'potions')
 
 # --- Miscellaneous ---
 HIT_SOUND_TIMES = 3
@@ -192,7 +194,7 @@ class Game:
         """
         x = random.randint(0, WINDOW_WIDTH - self.monster_image.get_width())
         return Monster(
-            os.path.join(SPRITES_PATH, 'monster.png'),  # Pass the full path for the monster image
+            MONSTERS_PATH,
             x,
             0,
             MONSTER_SPEED,
@@ -533,24 +535,20 @@ class Game:
 
                 if len(self.monsters) < MAX_MONSTERS and random.random() < 0.06:
                     monster = self.create_monster()
-                    if not pygame.sprite.spritecollideany(monster, self.monsters | self.coins):
+                    if self.is_positionable(monster):
                         self.monsters.add(monster)
                         self.all_sprites.add(monster)
 
                 if len(self.coins) < MAX_COINS and random.random() < 0.05:
                     coin = self.create_coin()
-                    if not pygame.sprite.spritecollideany(coin, self.coins):
+                    if self.is_positionable(coin):
                         self.coins.add(coin)
                         self.all_sprites.add(coin)
 
                 if len(self.jewels) < MAX_JEWELS and random.random() < 0.005:
                     jewel = self.create_jewel()
-
-                    if all(
-                        not pygame.sprite.spritecollideany(jewel, group) 
-                        for group in [self.jewels, self.coins, self.monsters]
-                    ):
-
+                    
+                    if self.is_positionable(jewel):
                         self.jewels.add(jewel)
                         self.all_sprites.add(jewel)
 
@@ -558,8 +556,6 @@ class Game:
                 colliding_monsters = pygame.sprite.spritecollide(self.hero, self.monsters, True)
                 if colliding_monsters:
                     self.handle_monster_collision(colliding_monsters, current_time)
-
-                   
 
                 for coin in pygame.sprite.spritecollide(self.hero, self.coins, True):
                     self.score += coin.value
@@ -617,6 +613,10 @@ class Game:
             pygame.display.flip()
 
         pygame.quit()
+
+    def is_positionable(self, asset) -> bool:
+        return all( not pygame.sprite.spritecollideany(asset, group) 
+                            for group in [self.jewels, self.coins, self.monsters])
 
 
 if __name__ == "__main__":
