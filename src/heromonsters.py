@@ -24,6 +24,7 @@ MAX_JEWELS = 1
 
 # --- Font ---
 FONT_SIZE = 24
+FONT_SIZE_SMALL = 16
 
 # --- Colors ---
 BLACK = (0, 0, 0)
@@ -39,6 +40,13 @@ SOUNDS_PATH = os.path.join(BASE_PATH, '../assets/music')
 FONTS_PATH = os.path.join(BASE_PATH, '../assets/fonts')
 MONSTERS_PATH = os.path.join(SPRITES_PATH, 'monsters')
 POTIONS_PATH = os.path.join(SPRITES_PATH, 'potions')
+JEWELS_PATH = os.path.join(SPRITES_PATH, 'jewels')
+
+# --- Probabilities ---
+MONSTER_SPAWN_PROBABILITY = 0.06
+COIN_SPAWN_PROBABILITY = 0.05
+JEWEL_SPAWN_PROBABILITY = 0.005
+POTION_SPAWN_PROBABILITY = 0.002
 
 # --- Miscellaneous ---
 HIT_SOUND_TIMES = 3
@@ -110,19 +118,10 @@ class Game:
 
 
         self.hero_image = pygame.image.load(os.path.join(SPRITES_PATH, 'hero.png')).convert_alpha()
-        self.monster_image = pygame.image.load(os.path.join(SPRITES_PATH, 'monster.png')).convert_alpha()
         self.coin_image = pygame.image.load(os.path.join(SPRITES_PATH, 'coin.png')).convert_alpha()
-        self.jewels_images = []
-        self.jewels_paths = {}
+       
         self.collected_jewels = 0
         self.collected_coins = 0
-
-
-        #Load the four jewel images
-        for i in range(1, 5):
-            path = os.path.join(SPRITES_PATH, f'jewel{i}.png')
-            self.jewels_images.append(pygame.image.load(path).convert_alpha())
-            self.jewels_paths[i] = path
 
         # Set the hero image as the window icon
         pygame.display.set_icon(self.hero_image)
@@ -157,6 +156,7 @@ class Game:
         self.monsters = pygame.sprite.Group()
         self.coins = pygame.sprite.Group()
         self.jewels = pygame.sprite.Group()
+        self.potions = pygame.sprite.Group()
 
         # Create hero
         self.hero = Hero(
@@ -192,7 +192,7 @@ class Game:
             Monster: A new Monster object initialized with the specified image path, 
                      random x-coordinate, y-coordinate set to 0, speed, and window height.
         """
-        x = random.randint(0, WINDOW_WIDTH - self.monster_image.get_width())
+        x = random.randint(0, WINDOW_WIDTH - 64)
         return Monster(
             MONSTERS_PATH,
             x,
@@ -226,16 +226,11 @@ class Game:
         Returns:
             Jewel: A new Jewel object with the selected image, initial position, speed, and window height.
         """
-        # Randomly select one of the four jewel images
-        jewel_image_index = random.choice(range(1, 5)) - 1  # Adjust for zero-indexing
-        x = random.randint(0, WINDOW_WIDTH - self.jewels_images[jewel_image_index].get_width())
-        y = -self.jewels_images[jewel_image_index].get_height()
-
-        # Get the path to the selected jewel image
-        jewel_image_path = self.jewels_paths[jewel_image_index + 1]  # Adjust back to original index for path
+        x = random.randint(0, WINDOW_WIDTH - 64)
+        y = 0
 
         return Jewel(
-            jewel_image_path,  # Pass the path directly
+            JEWELS_PATH,
             x,
             y,
             JEWEL_SPEED,
@@ -438,6 +433,7 @@ class Game:
         self.monsters.empty()
         self.coins.empty()
         self.jewels.empty()
+        self.potions.empty()
         self.level = 1
         self.collected_coins = 0
         self.collected_jewels = 0
@@ -533,19 +529,19 @@ class Game:
                             self.monsters.remove(monster)
                             self.all_sprites.remove(monster)
 
-                if len(self.monsters) < MAX_MONSTERS and random.random() < 0.06:
+                if len(self.monsters) < MAX_MONSTERS and random.random() < MONSTER_SPAWN_PROBABILITY:
                     monster = self.create_monster()
                     if self.is_positionable(monster):
                         self.monsters.add(monster)
                         self.all_sprites.add(monster)
 
-                if len(self.coins) < MAX_COINS and random.random() < 0.05:
+                if len(self.coins) < MAX_COINS and random.random() < COIN_SPAWN_PROBABILITY:
                     coin = self.create_coin()
                     if self.is_positionable(coin):
                         self.coins.add(coin)
                         self.all_sprites.add(coin)
 
-                if len(self.jewels) < MAX_JEWELS and random.random() < 0.005:
+                if len(self.jewels) < MAX_JEWELS and random.random() < JEWEL_SPAWN_PROBABILITY:
                     jewel = self.create_jewel()
                     
                     if self.is_positionable(jewel):
@@ -592,11 +588,11 @@ class Game:
             self.all_sprites.draw(self.screen)
 
             for coin in self.coins:
-                value_text = pygame.font.Font(None, FONT_SIZE // 2).render(str(coin.value), True, BLACK)
+                value_text = pygame.font.Font(None, FONT_SIZE_SMALL).render(str(coin.value), True, BLACK)
                 self.screen.blit(value_text, value_text.get_rect(center=coin.rect.center))
 
             for jewel in self.jewels:
-                value_text = pygame.font.Font(None, FONT_SIZE // 2).render(str(jewel.value), True, BLACK)
+                value_text = pygame.font.Font(None, FONT_SIZE_SMALL).render(str(jewel.value), True, BLACK)
                 self.screen.blit(value_text, value_text.get_rect(center=jewel.rect.center))
 
 
@@ -616,7 +612,7 @@ class Game:
 
     def is_positionable(self, asset) -> bool:
         return all( not pygame.sprite.spritecollideany(asset, group) 
-                            for group in [self.jewels, self.coins, self.monsters])
+                            for group in [self.jewels, self.coins, self.monsters, self.potions])
 
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
 import random
-import pygame
 from .coin import Coin
 
 class Jewel(Coin):
@@ -16,7 +15,7 @@ class Jewel(Coin):
         update():
             Updates the position of the jewel and removes it if it goes out of the game window.
     """
-    def __init__(self, image_path: str, x: int, y: int, speed: int, window_height: int) -> None:
+    def __init__(self, image_folder: str, x: int, y: int, speed: int, window_height: int) -> None:
         """
         Initializes a Jewel object.
         Args:
@@ -29,6 +28,9 @@ class Jewel(Coin):
             window_height (int): The height of the game window.
             value (int): The randomly assigned value of the jewel.
         """
+        # Select a random image from the provided folder
+        _, image_path = self.get_random_image(image_folder)
+        
         # Load the base image
         super().__init__(image_path, x, y, speed, window_height)
         self.window_height = window_height
