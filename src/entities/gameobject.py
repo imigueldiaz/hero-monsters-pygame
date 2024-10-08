@@ -1,3 +1,5 @@
+import os
+import random
 import pygame
 from typing import TypeVar, Generic
 
@@ -45,3 +47,55 @@ class GameObject(pygame.sprite.Sprite, Generic[GameObjectType]):
             
         self.rect = self.image.get_rect(topleft=(x, y))
         self.speed = speed
+
+    def calculate_weights(self, image_files) -> list:
+            """
+            Calculate weights based on the numeric values extracted from image file names.
+
+            This method processes a list of image file names, extracts numeric values from each file name,
+            and calculates a weight for each image. The weight is inversely proportional to the extracted
+            numeric value plus one, to avoid division by zero.
+
+            Args:
+                image_files (list of str): A list of image file names.
+
+            Returns:
+                list of float: A list of calculated weights corresponding to each image file.
+            """
+            weights = []
+            for image in image_files:
+                number_str = ''.join(filter(str.isdigit, image))
+                if number_str:
+                    weight = int(number_str)
+                else:
+                    weight = 1  # Default value if no number is found
+                weights.append(1 / (weight + 1))  # Adding 1 to avoid division by zero
+            return weights
+        
+    def get_random_image(self, image_folder) -> str:
+        """
+        Selects a random image file from the specified folder, with weighted probabilities.
+        Args:
+            image_folder (str): The path to the folder containing image files.
+        Returns:
+            str: The name of the randomly selected image file.
+            str: The full path to the randomly selected image file.
+        Raises:
+            ValueError: If no valid image files are found in the specified folder.
+        """
+        
+        image_files = [
+            f for f in os.listdir(image_folder)
+            if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))
+        ]
+
+        if not image_files:
+            raise ValueError("No valid image files found in the specified folder")
+
+        # Calculate weights for image selection
+        weights = self.calculate_weights(image_files)
+        
+        # Choose a random image from the list, with calculated weights
+        random_image = random.choices(image_files, weights=weights, k=1)[0]
+        image_path = os.path.join(image_folder, random_image)
+        return random_image,image_path    

@@ -1,5 +1,3 @@
-import os
-import random
 from .gameobject import GameObject, GameObjectType
 import pygame
 
@@ -40,20 +38,7 @@ class Monster(GameObject[GameObjectType]):
             damage (int): The amount of damage the monster can inflict.
         """
         # Select a random image from the provided folder
-        image_files = [
-            f for f in os.listdir(image_folder)
-            if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))
-        ]
-
-        if not image_files:
-            raise ValueError("No valid image files found in the specified folder")
-
-        # Calculate weights for image selection
-        weights = self.calculate_weights(image_files)
-        
-        # Choose a random image from the list, with calculated weights
-        random_image = random.choices(image_files, weights=weights, k=1)[0]
-        image_path = os.path.join(image_folder, random_image)
+        random_image, image_path = self.get_random_image(image_folder)
         
         # Load the image and initialize the parent class
         super().__init__(image_path, x, y, monster_speed)
@@ -70,32 +55,8 @@ class Monster(GameObject[GameObjectType]):
         new_width = int(self.rect.width * (1 + (self.damage / 10)))
         new_height = int(self.rect.height * (1 + (self.damage / 10)))
         self.image = pygame.transform.scale(self.image, (new_width, new_height))
-        
+
     
-    def calculate_weights(self, image_files):
-        """
-        Calculate weights based on the numeric values extracted from image file names.
-
-        This method processes a list of image file names, extracts numeric values from each file name,
-        and calculates a weight for each image. The weight is inversely proportional to the extracted
-        numeric value plus one, to avoid division by zero.
-
-        Args:
-            image_files (list of str): A list of image file names.
-
-        Returns:
-            list of float: A list of calculated weights corresponding to each image file.
-        """
-        weights = []
-        for image in image_files:
-            number_str = ''.join(filter(str.isdigit, image))
-            if number_str:
-                damage_value = int(number_str)
-            else:
-                damage_value = 1  # Default value if no number is found
-            weights.append(1 / (damage_value + 1))  # Adding 1 to avoid division by zero
-        return weights    
-        
 
     def fade_out(self, current_time) -> None:
         """
