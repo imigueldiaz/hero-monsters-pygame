@@ -463,35 +463,35 @@ class Game:
         )
 
     def handle_monster_collision(self, colliding_monsters, current_time):
-                            """
-                            Handles the collision between the hero and monsters.
-                            
-                            Args:
-                                colliding_monsters (list): List of monsters colliding with the hero.
-                                current_time (int): The current time in milliseconds.
-                            
-                            Returns:
-                                None
-                            """
-                            # Check if enough time has passed since the last collision
-                            if current_time - self.hero.last_collision_time > self.hero.collision_cooldown:
-                                if self.hero.life_points > 0:
-                                    self.HIT.play(HIT_SOUND_TIMES)
-                                    self.hero.last_collision_time = current_time  # Reset the collision timer
-                                    self.blink_start_time = current_time  # Start the blinking timer
-                                    self.hero_is_blinking = True  # Set the hero to blink
+        """
+        Handles the collision between the hero and monsters.
+        
+        Args:
+            colliding_monsters (list): List of monsters colliding with the hero.
+            current_time (int): The current time in milliseconds.
+        
+        Returns:
+            None
+        """
+        # Check if enough time has passed since the last collision
+        if current_time - self.hero.last_collision_time > self.hero.collision_cooldown:
+            if self.hero.life_points > 0:
+                self.HIT.play(HIT_SOUND_TIMES)
+                self.hero.last_collision_time = current_time  # Reset the collision timer
+                self.blink_start_time = current_time  # Start the blinking timer
+                self.hero_is_blinking = True  # Set the hero to blink
 
-                                # Remove the colliding monsters from the all_sprites group
-                                for monster in colliding_monsters:
-                                    self.hero.life_points -= monster.damage  # Decrease hero life
+            # Remove the colliding monsters from the all_sprites group
+            for monster in colliding_monsters:
+                self.hero.life_points -= monster.damage  # Decrease hero life
 
-                                    # Mark the monster for removal
-                                    monster.is_fading = True
-                                monster.fade_start_time = current_time
-                                
-                                 # Check if the hero has run out of life
-                                if self.hero.life_points <= 0:
-                                    self.game_over = True
+                # Mark the monster for removal
+                monster.is_fading = True
+            monster.fade_start_time = current_time
+            
+                # Check if the hero has run out of life
+            if self.hero.life_points <= 0:
+                self.game_over = True
 
     def run(self) -> None:
         """
