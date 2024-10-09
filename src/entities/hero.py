@@ -38,7 +38,7 @@ class Hero(GameObject[GameObjectType]):
         """
         super().__init__(image_path, x, y, hero_speed)
         self.window_width = window_width
-        self.life = 10
+        self.life_points = 10
         self.inmunity = False
         self.enhanced = False
         self.collision_cooldown = 1000  # 1000 milliseconds = 1 second cooldown

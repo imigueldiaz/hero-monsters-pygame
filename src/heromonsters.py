@@ -3,53 +3,54 @@ import pygame
 import random
 import math
 
-from entities import Hero, Monster, Coin, GameObjectType, Jewel
+from entities import Hero, Monster, Coin, Jewel
 
 # --- Constants ---
 
 # --- Screen Dimensions ---
-WINDOW_WIDTH, WINDOW_HEIGHT = 1024, 768
-FPS = 50
+WINDOW_WIDTH: int = 1024
+WINDOW_HEIGHT: int = 768
+FPS: int = 50
 
 # --- Speeds ---
-HERO_SPEED = 5
-MONSTER_SPEED = 3
-COIN_SPEED = 5
-JEWEL_SPEED = 7
+HERO_SPEED: int = 5
+MONSTER_SPEED: int = 3
+COIN_SPEED: int = 5
+JEWEL_SPEED: int = 7
 
 # --- Limits ---
-MAX_MONSTERS = 5
-MAX_COINS = 3
-MAX_JEWELS = 1
+MAX_MONSTERS: int = 5
+MAX_COINS: int = 3
+MAX_JEWELS: int = 1
 
 # --- Font ---
-FONT_SIZE = 24
-FONT_SIZE_SMALL = 16
+FONT_SIZE: int = 24
+FONT_SIZE_SMALL: int = 16
 
 # --- Colors ---
-BLACK = (0, 0, 0)
-WHITE = (200, 200, 200)
-WHITETRANS = (200, 200, 200, 100)
-GOLDENTRANS = (255, 215, 0, 100)
-REDFIRETRANS = (178, 34, 34, 80)
+BLACK: tuple = (0, 0, 0)
+WHITE: tuple = (200, 200, 200)
+WHITETRANS: tuple = (200, 200, 200, 100)
+GOLDENTRANS: tuple = (255, 215, 0, 100)
+REDFIRETRANS: tuple = (178, 34, 34, 80)
 
 # --- Paths ---
-BASE_PATH = os.path.dirname(__file__)
-SPRITES_PATH = os.path.join(BASE_PATH, '../assets/images')
-SOUNDS_PATH = os.path.join(BASE_PATH, '../assets/music')
-FONTS_PATH = os.path.join(BASE_PATH, '../assets/fonts')
-MONSTERS_PATH = os.path.join(SPRITES_PATH, 'monsters')
-POTIONS_PATH = os.path.join(SPRITES_PATH, 'potions')
-JEWELS_PATH = os.path.join(SPRITES_PATH, 'jewels')
+BASE_PATH: str = os.path.dirname(__file__)
+SPRITES_PATH: str = os.path.join(BASE_PATH, '../assets/images')
+SOUNDS_PATH: str = os.path.join(BASE_PATH, '../assets/music')
+FONTS_PATH: str = os.path.join(BASE_PATH, '../assets/fonts')
+MONSTERS_PATH: str = os.path.join(SPRITES_PATH, 'monsters')
+POTIONS_PATH: str = os.path.join(SPRITES_PATH, 'potions')
+JEWELS_PATH: str = os.path.join(SPRITES_PATH, 'jewels')
 
 # --- Probabilities ---
-MONSTER_SPAWN_PROBABILITY = 0.06
-COIN_SPAWN_PROBABILITY = 0.05
-JEWEL_SPAWN_PROBABILITY = 0.005
-POTION_SPAWN_PROBABILITY = 0.002
+MONSTER_SPAWN_PROBABILITY: float = 0.06
+COIN_SPAWN_PROBABILITY: float = 0.05
+JEWEL_SPAWN_PROBABILITY: float = 0.005
+POTION_SPAWN_PROBABILITY: float = 0.002
 
 # --- Miscellaneous ---
-HIT_SOUND_TIMES = 3
+HIT_SOUND_TIMES: int = 3
 
 class Game:
     """
@@ -104,8 +105,11 @@ class Game:
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Hero vs Monsters")
 
-        # Load font
+        # Load Emoji font
         self.emoji_font = pygame.font.Font(os.path.join(FONTS_PATH, 'Symbola.ttf') , FONT_SIZE)
+        
+        #Load standard font
+        self.font = pygame.font.Font(None, FONT_SIZE)
 
         # Load images
         self.bg_image = pygame.image.load(os.path.join(SPRITES_PATH, 'bg.png')).convert()
@@ -260,7 +264,7 @@ class Game:
         Returns:
             None
         """
-        life_text = self.emoji_font.render(f"❤️ {self.hero.life}", True, WHITETRANS)
+        life_text = self.emoji_font.render(f"❤️ {self.hero.life_points}", True, WHITETRANS)
         self.screen.blit(life_text, (10, 50))
 
     def display_level(self) -> None:
@@ -316,8 +320,6 @@ class Game:
         self.screen.blit(game_over_text, text_rect)
 
         pygame.display.flip()
-
-
 
     def apply_flame_ripple(self, surface, base_amplitude, frequency, speed, offset) -> pygame.Surface:
         """
@@ -439,6 +441,19 @@ class Game:
         self.collected_jewels = 0
 
         # Create hero with the full image path
+        self.create_hero()
+        self.all_sprites.add(self.hero)
+
+    def create_hero(self):
+        """
+        Creates a hero character for the game.
+
+        This method initializes the hero character by creating an instance of the Hero class.
+        The hero's sprite, initial position, speed, and movement boundaries are set.
+
+        Attributes:
+            self.hero (Hero): An instance of the Hero class representing the hero character.
+        """
         self.hero = Hero(
             os.path.join(SPRITES_PATH, 'hero.png'),
             WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
@@ -446,7 +461,6 @@ class Game:
             HERO_SPEED,
             WINDOW_WIDTH
         )
-        self.all_sprites.add(self.hero)
 
     def handle_monster_collision(self, colliding_monsters, current_time):
                             """
@@ -461,7 +475,7 @@ class Game:
                             """
                             # Check if enough time has passed since the last collision
                             if current_time - self.hero.last_collision_time > self.hero.collision_cooldown:
-                                if self.hero.life > 0:
+                                if self.hero.life_points > 0:
                                     self.HIT.play(HIT_SOUND_TIMES)
                                     self.hero.last_collision_time = current_time  # Reset the collision timer
                                     self.blink_start_time = current_time  # Start the blinking timer
@@ -469,14 +483,14 @@ class Game:
 
                                 # Remove the colliding monsters from the all_sprites group
                                 for monster in colliding_monsters:
-                                    self.hero.life -= monster.damage  # Decrease hero life
+                                    self.hero.life_points -= monster.damage  # Decrease hero life
 
                                     # Mark the monster for removal
                                     monster.is_fading = True
                                 monster.fade_start_time = current_time
                                 
                                  # Check if the hero has run out of life
-                                if self.hero.life == 0:
+                                if self.hero.life_points <= 0:
                                     self.game_over = True
 
     def run(self) -> None:

@@ -1,5 +1,4 @@
 import random
-import pygame
 from .gameobject import GameObject, GameObjectType
 
 class Coin(GameObject[GameObjectType]):
@@ -37,8 +36,9 @@ class Coin(GameObject[GameObjectType]):
         super().__init__(image_path, x, y, speed)
         self.window_height = window_height
 
-        # Assign a random value to the coin
-        self.value = random.randint(1, 25)
+        # Assign a random value to the coin bwtween 1 and 25 taking account inverse weight
+        self.value = random.choices([1, 2, 3, 4, 5], weights=[0.5, 0.2, 0.15, 0.1, 0.05])[0]
+       
 
     def update(self) -> None:
         """

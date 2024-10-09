@@ -16,7 +16,7 @@ class Monster(GameObject[GameObjectType]):
             Initializes a new instance of the Monster class.
         fade_out(current_time: int) -> bool:
             Handles the fade out effect of the monster.
-        update():
+        update(current_time: int):
             Updates the monster's position and handles its fade out and removal.
     """
     def __init__(self, image_folder: str, x: int, y: int, monster_speed: int, window_height: int) -> None:
@@ -56,8 +56,6 @@ class Monster(GameObject[GameObjectType]):
         new_height = int(self.rect.height * (1 + (self.damage / 10)))
         self.image = pygame.transform.scale(self.image, (new_width, new_height))
 
-    
-
     def fade_out(self, current_time) -> None:
         """
         Starts the fade-out effect for the monster.
@@ -73,11 +71,12 @@ class Monster(GameObject[GameObjectType]):
         Args:
             current_time (int): The current time in milliseconds.
         """
+        current_time = pygame.time.get_ticks()
         self.rect.y += self.speed
         
         # Check if the monster is fading out or if it has to fade out simulate the fade out effect
         if self.is_fading:
-            elapsed_time = pygame.time.get_ticks() - self.fade_start_time
+            elapsed_time = current_time - self.fade_start_time
             alpha = 255 - int(255 * elapsed_time / self.fade_duration)
             self.image.set_alpha(alpha)
             if alpha <= 0:
@@ -85,4 +84,3 @@ class Monster(GameObject[GameObjectType]):
         
         if self.rect.top > self.window_height:
             self.kill()
-    
