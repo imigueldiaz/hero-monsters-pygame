@@ -1,6 +1,7 @@
 import math
 import os
 import random
+import sys
 from typing import TypeVar, cast
 
 import pygame
@@ -43,10 +44,10 @@ REDFIRETRANS: tuple = (178, 34, 34, 80)
 
 
 # --- Paths ---
-BASE_PATH: str = os.path.dirname(__file__)
-SPRITES_PATH: str = os.path.join(BASE_PATH, '../assets/images')
-SOUNDS_PATH: str = os.path.join(BASE_PATH, '../assets/music')
-FONTS_PATH: str = os.path.join(BASE_PATH, '../assets/fonts')
+BASE_PATH: str = getattr(sys, '_MEIPASS', os.path.abspath("."))
+SPRITES_PATH: str = os.path.join(BASE_PATH, 'assets/images')
+SOUNDS_PATH: str = os.path.join(BASE_PATH, 'assets/music')
+FONTS_PATH: str = os.path.join(BASE_PATH, 'assets/fonts')
 MONSTERS_PATH: str = os.path.join(SPRITES_PATH, 'monsters')
 POTIONS_PATH: str = os.path.join(SPRITES_PATH, 'potions')
 JEWELS_PATH: str = os.path.join(SPRITES_PATH, 'jewels')

@@ -38,6 +38,16 @@ This is a fun experiment to learn PyGame by creating a simple game where a hero 
     - **Space:** Restart the game after game over
     - **Q or Escape:** Quit the game
 
+## Building the executable
+To build the executable, you need to have PyInstaller installed. It should be installed when you run `pip install -r requirements.txt`.
+
+Then you only have to use the spec file to build the executable:
+```sh
+pyinstaller run_game.spec
+```
+you will find the executable in the `dist` folder.
+
+
 ## Notes
 The game is over when the hero collides with a monster or the hero falls off the screen. The hero can collect coins to increase the score. The game has a simple pause menu that can be accessed by pressing the "P" key.
 
