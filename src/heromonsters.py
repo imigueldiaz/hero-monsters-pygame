@@ -327,7 +327,7 @@ class Game:
         game_over_text_red = self.font_XL.render(text, True, REDFIRETRANS)
         text_rect = game_over_text_red.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
         game_over_text_golden = self.font_XL.render(text, True, GOLDENTRANS)
-        text_rect_golden = game_over_text_golden.get_rect(center=(WINDOW_WIDTH // 2 + 5, WINDOW_HEIGHT // 2 + 5))
+        text_rect_golden = game_over_text_golden.get_rect(center=(WINDOW_WIDTH // 2 + 3, WINDOW_HEIGHT // 2 + 3))
 
         self.screen.blit(game_over_text_red, text_rect)
         self.screen.blit(game_over_text_golden, text_rect_golden)
