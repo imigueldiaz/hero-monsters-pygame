@@ -17,7 +17,7 @@ class ImageHelper:
         weights = []
         for image in image_files:
             # Extract any numbers from the image file name
-            number_str = ''.join(filter(str.isdigit, image))
+            number_str = ''.join([char for char in image if char.isdigit()])
             if number_str:
                 # Use the number as the weight
                 weight = int(number_str)

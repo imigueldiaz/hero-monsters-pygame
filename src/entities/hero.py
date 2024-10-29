@@ -6,8 +6,8 @@ class Hero(pygame.sprite.Sprite):
     Hero class represents the main character in the game.
     Attributes:
         window_width (int): The width of the game window.
-        life (int): The life points of the hero.
-        inmunity (bool): Indicates if the hero is currently immune to damage.
+        life_points (int): The life points of the hero.
+        immunity (bool): Indicates if the hero is currently immune to damage.
         enhanced (bool): Indicates if the hero has enhanced abilities.
         collision_cooldown (int): The cooldown period in milliseconds after a collision.
         last_collision_time (int): The timestamp of the last collision.
@@ -17,7 +17,8 @@ class Hero(pygame.sprite.Sprite):
         update():
             Updates the hero's position based on user input.
     """
-    def __init__(self, image_path: str, x: int, y: int, hero_speed: int, window_width: int, *groups: pygame.sprite.Group) -> None:
+    def __init__(self, image_path: str, x: int, y: int, hero_speed: int, window_width: int,
+                 *groups: pygame.sprite.Group) -> None:
         """
         Initialize a Hero object.
 
@@ -31,7 +32,7 @@ class Hero(pygame.sprite.Sprite):
         Attributes:
             window_width (int): The width of the game window.
             life (int): The life points of the hero.
-            inmunity (bool): Flag indicating if the hero is immune to damage.
+            immunity (bool): Flag indicating if the hero is immune to damage.
             enhanced (bool): Flag indicating if the hero has enhanced abilities.
             collision_cooldown (int): Cooldown period in milliseconds between collisions.
             last_collision_time (int): Timestamp of the last collision.
@@ -43,7 +44,7 @@ class Hero(pygame.sprite.Sprite):
         self.speed = hero_speed
         self.window_width = window_width
         self.life_points = 10
-        self.inmunity = False
+        self.immunity = False
         self.enhanced = False
         self.collision_cooldown = 1000  # 1000 milliseconds = 1 second cooldown
         self.last_collision_time = 0  # Track the last time a collision happened

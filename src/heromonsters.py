@@ -1,10 +1,15 @@
-import os
-import pygame
-import random
 import math
+import os
+import random
+from typing import TypeVar, cast
 
-from typing import cast
+import pygame
+
 from entities import Hero, Monster, Coin, Jewel
+
+# --- Type Hint ---
+# Generic type hint for sprite objects
+TSprite = TypeVar('TSprite', bound=pygame.sprite.Sprite)
 
 # --- Constants ---
 
@@ -32,7 +37,7 @@ FONT_SIZE_LARGE: int = 48
 # --- Colors ---
 BLACK: tuple = (0, 0, 0)
 WHITE: tuple = (200, 200, 200)
-WHITETRANS: tuple = (200, 200, 200, 150)
+TRANSPARENT_WHITE: tuple = (200, 200, 200, 150)
 GOLDENTRANS: tuple = (255, 215, 0, 100)
 REDFIRETRANS: tuple = (178, 34, 34, 80)
 
@@ -76,33 +81,13 @@ class Game:
         reset_game(): Resets the game state to start a new game.
         run(): The main game loop that handles events, updates game state, and renders the game.
     """
+
+
+
     def __init__(self) -> None:
         """
         Initializes the game by setting up the display, loading assets, and initializing game variables.
-        Attributes:
-            screen (pygame.Surface): The main display surface.
-            emoji_font (pygame.font.Font): The font used for displaying emojis.
-            bg_image (pygame.Surface): The background image.
-            bg_width (int): The width of the background image.
-            bg_height (int): The height of the background image.
-            bg_x (int): The x-coordinate for background scrolling.
-            bg_y (int): The y-coordinate for background scrolling.
-            hero_image (pygame.Surface): The image of the hero character.
-            monster_image (pygame.Surface): The image of the monster character.
-            coin_image (pygame.Surface): The image of the coin.
-            jewels_images (list): List of jewel images.
-            jewels_paths (dict): Dictionary mapping jewel indices to their file paths.
-            collected_jewels (int): Counter for collected jewels.
-            collected_coins (int): Counter for collected coins.
-            score (int): The player's score.
-            game_over (bool): Flag indicating if the game is over.
-            clock (pygame.time.Clock): The game clock.
-            running (bool): Flag indicating if the game is running.
-            paused (bool): Flag indicating if the game is paused.
-            blink_duration (int): Duration for which the hero blinks (in milliseconds).
-            blink_start_time (int): Time when the blinking starts.
-            hero_is_blinking (bool): Flag to indicate if the hero is blinking.
-            level (int): The current game level.
+
         """
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
@@ -115,8 +100,8 @@ class Game:
         self.font = pygame.font.Font(None, FONT_SIZE)
 
         # Load large font
-        self.font_xlarge = pygame.font.Font(os.path.join(FONTS_PATH, 'Symbola.ttf') , FONT_SIZE_LARGE)
-        self.font_xlarge.set_bold(True)
+        self.font_XL = pygame.font.Font(os.path.join(FONTS_PATH, 'Symbola.ttf'), FONT_SIZE_LARGE)
+        self.font_XL.set_bold(True)
 
         # Load images
         self.bg_image = pygame.image.load(os.path.join(SPRITES_PATH, 'bg.png')).convert()
@@ -184,26 +169,29 @@ class Game:
         pygame.mixer.music.load(os.path.join(SOUNDS_PATH, 'sound.mp3'))
         pygame.mixer.music.play(-1)
 
-        self.COINSOUND = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping01.mp3'))
-        self.JEWELSOUND = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping02.mp3'))
+        self.COIN_SOUND = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping01.mp3'))
+        self.JEWEL_SOUND = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping02.mp3'))
         self.HIT = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'hit01.mp3'))
 
-    def create_monster(self) -> Monster:
+    def create_hero(self) -> Hero:
         """
-        Creates a new monster instance with a random horizontal position.
+        Creates a hero character for the game.
 
-        Returns:
-            Monster: A new Monster object initialized with the specified image path,
-                     random x-coordinate, y-coordinate set to 0, speed, and window height.
+        This method initializes the hero character by creating an instance of the Hero class.
+        The hero's sprite, initial position, speed, and movement boundaries are set.
+
+        Attributes:
+            self.hero (Hero): An instance of the Hero class representing the hero character.
         """
-        x = random.randint(0, WINDOW_WIDTH - 64)
-        return Monster(
-            MONSTERS_PATH,
-            x,
-            0,
-            MONSTER_SPEED,
-            WINDOW_HEIGHT
+        hero: Hero = Hero(
+            os.path.join(SPRITES_PATH, 'hero.png'),
+            WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
+            WINDOW_HEIGHT - self.hero_image.get_height() - 10,
+            HERO_SPEED,
+            WINDOW_WIDTH,
+            self.all_sprites
         )
+        return hero
 
     def create_coin(self) -> Coin:
         """
@@ -221,7 +209,9 @@ class Game:
             COIN_SPEED,
             WINDOW_HEIGHT
         )
-    def create_jewel(self) -> Jewel:
+
+    @staticmethod
+    def create_jewel() -> Jewel:
         """
         Creates a new Jewel object with a randomly selected image and initial position.
         The jewel image is randomly chosen from a predefined list of jewel images.
@@ -240,6 +230,23 @@ class Game:
             JEWEL_SPEED,
             WINDOW_HEIGHT
         )
+    @staticmethod
+    def create_monster() -> Monster:
+        """
+        Creates a new monster instance with a random horizontal position.
+
+        Returns:
+            Monster: A new Monster object initialized with the specified image path,
+                     random x-coordinate, y-coordinate set to 0, speed, and window height.
+        """
+        x = random.randint(0, WINDOW_WIDTH - 64)
+        return Monster(
+            MONSTERS_PATH,
+            x,
+            0,
+            MONSTER_SPEED,
+            WINDOW_HEIGHT
+        )
 
     def display_score(self) -> None:
         """
@@ -251,7 +258,7 @@ class Game:
         Returns:
             None
         """
-        score_text = self.emoji_font.render(f"🏆 {self.score}", True, WHITETRANS)
+        score_text = self.emoji_font.render(f"🏆 {self.score}", True, TRANSPARENT_WHITE)
         self.screen.blit(score_text, (10, 10))
 
     def display_life(self) -> None:
@@ -264,7 +271,7 @@ class Game:
         Returns:
             None
         """
-        life_text = self.emoji_font.render(f"❤️ {self.hero.life_points}", True, WHITETRANS)
+        life_text = self.emoji_font.render(f"❤️ {self.hero.life_points}", True, TRANSPARENT_WHITE)
         self.screen.blit(life_text, (10, 50))
 
     def display_level(self) -> None:
@@ -276,7 +283,7 @@ class Game:
         Returns:
             None
         """
-        level_text = self.emoji_font.render(f"📈 {self.level}", True, WHITETRANS)
+        level_text = self.emoji_font.render(f"📈 {self.level}", True, TRANSPARENT_WHITE)
         self.screen.blit(level_text, (10, 90))
 
     def display_coins(self) -> None:
@@ -289,7 +296,7 @@ class Game:
         Returns:
             None
         """
-        coins_text = self.emoji_font.render(f"🪙 {self.collected_coins}", True, WHITETRANS)
+        coins_text = self.emoji_font.render(f"🪙 {self.collected_coins}", True, TRANSPARENT_WHITE)
         self.screen.blit(coins_text, (10, 130))
 
     def display_jewels(self) -> None:
@@ -317,9 +324,9 @@ class Game:
 
         text = f"💀 Game Over! Press Space to Restart"
 
-        game_over_text_red = self.font_xlarge.render(text, True, REDFIRETRANS)
+        game_over_text_red = self.font_XL.render(text, True, REDFIRETRANS)
         text_rect = game_over_text_red.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
-        game_over_text_golden = self.font_xlarge.render(text, True, GOLDENTRANS)
+        game_over_text_golden = self.font_XL.render(text, True, GOLDENTRANS)
         text_rect_golden = game_over_text_golden.get_rect(center=(WINDOW_WIDTH // 2 + 5, WINDOW_HEIGHT // 2 + 5))
 
         self.screen.blit(game_over_text_red, text_rect)
@@ -327,7 +334,8 @@ class Game:
 
         pygame.display.flip()
 
-    def apply_flame_ripple(self, surface, base_amplitude, frequency, speed, offset) -> pygame.Surface:
+    @staticmethod
+    def apply_flame_ripple(surface, base_amplitude, frequency, speed, offset) -> pygame.Surface:
         """
         Apply a flame-like ripple effect to the given surface.
         Args:
@@ -448,28 +456,8 @@ class Game:
 
         # Create hero with the full image path
         self.hero = self.create_hero()
-        self.all_sprites.add(self.hero)
 
-    def create_hero(self) -> Hero:
-        """
-        Creates a hero character for the game.
 
-        This method initializes the hero character by creating an instance of the Hero class.
-        The hero's sprite, initial position, speed, and movement boundaries are set.
-
-        Attributes:
-            self.hero (Hero): An instance of the Hero class representing the hero character.
-        """
-        hero: Hero = Hero(
-            os.path.join(SPRITES_PATH, 'hero.png'),
-            WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
-            WINDOW_HEIGHT - self.hero_image.get_height() - 10,
-            HERO_SPEED,
-            WINDOW_WIDTH,
-            self.all_sprites
-        )
-        self.all_sprites.add(hero)
-        return hero
 
     def handle_monster_collision(self, colliding_monsters, current_time):
         """
@@ -552,19 +540,19 @@ class Game:
                             self.all_sprites.remove(monster)
 
                 if len(self.monsters) < MAX_MONSTERS and random.random() < MONSTER_SPAWN_PROBABILITY:
-                    monster = self.create_monster()
+                    monster: TSprite = self.create_monster()
                     if self.is_positionable(monster):
                         self.monsters.add(monster)
                         self.all_sprites.add(monster)
 
                 if len(self.coins) < MAX_COINS and random.random() < COIN_SPAWN_PROBABILITY:
-                    coin = self.create_coin()
+                    coin: TSprite = self.create_coin()
                     if self.is_positionable(coin):
                         self.coins.add(coin)
                         self.all_sprites.add(coin)
 
                 if len(self.jewels) < MAX_JEWELS and random.random() < JEWEL_SPAWN_PROBABILITY:
-                    jewel = self.create_jewel()
+                    jewel: TSprite = self.create_jewel()
 
                     if self.is_positionable(jewel):
                         self.jewels.add(jewel)
@@ -581,7 +569,7 @@ class Game:
                     self.collected_coins += 1
 
                     # Play the coin sound with volume based on the coin value
-                    sound = self.COINSOUND
+                    sound = self.COIN_SOUND
                     volume = math.log10(coin.value + 1) / math.log10(26)  # Volume from 0 to 1
                     sound.set_volume(volume)
                     sound.play()
@@ -591,7 +579,7 @@ class Game:
                     self.collected_jewels += 1
 
                     # Play the jewel sound with volume based on the jewel value
-                    sound = self.JEWELSOUND
+                    sound = self.JEWEL_SOUND
                     volume = math.log10(jewel.value + 1) / math.log10(100)
                     sound.set_volume(volume)
                     sound.play()
@@ -633,9 +621,9 @@ class Game:
 
         pygame.quit()
 
-    def is_positionable(self, asset) -> bool:
-        return all( not pygame.sprite.spritecollideany(asset, group)
-                            for group in [self.jewels, self.coins, self.monsters, self.potions])
+    def is_positionable(self, asset: TSprite) -> bool:
+        return all(not pygame.sprite.spritecollideany(asset, cast(pygame.sprite.AbstractGroup[TSprite], group))
+                   for group in [self.jewels, self.coins, self.monsters, self.potions])
 
 
 if __name__ == "__main__":

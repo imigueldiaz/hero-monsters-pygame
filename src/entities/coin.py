@@ -29,7 +29,6 @@ class Coin(pygame.sprite.Sprite):
             window_height (int): The height of the game window.
         Attributes:
             window_height (int): The height of the game window.
-            value (int): The value of the coin, randomly assigned between 1 and 25.
         Notes:
             There is a 50% chance that the coin's color will be changed to a random color.
         """
@@ -45,7 +44,7 @@ class Coin(pygame.sprite.Sprite):
         self.rect.y = self.y
         self.speed = speed
 
-        # Assign a random value to the coin bwtween 1 and 25 taking account inverse weight
+        # Assign a random value to the coin between 1 and 25 taking account inverse weight
         self.value = random.choices([1, 2, 3, 4, 5], weights=[0.5, 0.2, 0.15, 0.1, 0.05])[0]
 
 

@@ -1,7 +1,6 @@
 import pygame
 
-from entities.imagehelper import ImageHelper
-
+from src.imagehelper import ImageHelper
 
 class Monster(pygame.sprite.Sprite):
     """
@@ -10,7 +9,6 @@ class Monster(pygame.sprite.Sprite):
         window_height (int): The height of the game window.
         fade_start_time (int): The time when the fade out started.
         fade_duration (int): The duration of the fade out effect in milliseconds.
-        is_fading (bool): A flag indicating whether the monster is currently fading out.
         damage (int): The amount of damage the monster can inflict.
     Methods:
         __init__(image_path: str, x: int, y: int, monster_speed: int, window_height: int):
@@ -25,18 +23,14 @@ class Monster(pygame.sprite.Sprite):
         Initialize a Monster entity.
 
         Args:
-            image_path (str): The folder path to the monster's images.
-            x (int): The initial x-coordinate of the monster.
+            image_folder (str): The folder path to the monster's images.
+            x (int): The initial character-coordinate of the monster.
             y (int): The initial y-coordinate of the monster.
             monster_speed (int): The speed at which the monster moves.
             window_height (int): The height of the game window.
 
         Attributes:
             window_height (int): The height of the game window.
-            fade_start_time (int): The time when the fade effect starts.
-            fade_duration (int): The duration of the fade effect in milliseconds.
-            is_fading (bool): Indicates whether the monster is currently fading.
-            damage (int): The amount of damage the monster can inflict.
         """
         super().__init__()
 
@@ -63,8 +57,21 @@ class Monster(pygame.sprite.Sprite):
         self.fade = False
         self.alpha = 255
         self.window_height = window_height
+
+        def is_digit(character):
+            """
+            Checks if a given string `x` consists only of digits.
+
+            Args:
+                character (str): The string to be checked.
+
+            Returns:
+                bool: True if `x` consists only of digits, False otherwise.
+            """
+            return character.isdigit()
+
         # the damage value is extracted from the image file name
-        self.damage = int(''.join(filter(str.isdigit, random_image))) if any(char.isdigit() for char in random_image) else 1
+        self.damage = int(''.join(filter(is_digit, random_image))) if any(char.isdigit() for char in random_image) else 1
 
         #resize the image based on the monster's damage
         new_width = int(self.rect.width * (1 + (self.damage / 10)))
@@ -82,7 +89,12 @@ class Monster(pygame.sprite.Sprite):
 
     def update(self):
         # Updates the state of the monster, including handling the fade-out effect
-        current_time = pygame.time.get_ticks()
+        """
+        Updates the monster's position and handles its fade out and removal.
+
+        Returns:
+            None
+        """
         self.rect.y += self.speed
 
         # Handle fade-out effect if fading
