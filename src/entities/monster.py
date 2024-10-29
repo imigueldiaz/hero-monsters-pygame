@@ -1,8 +1,9 @@
-from .gameobject import GameObject, GameObjectType
 import pygame
 
+from entities.imagehelper import ImageHelper
 
-class Monster(GameObject[GameObjectType]):
+
+class Monster(pygame.sprite.Sprite):
     """
     A class representing a monster in the game.
     Attributes:
@@ -37,20 +38,34 @@ class Monster(GameObject[GameObjectType]):
             is_fading (bool): Indicates whether the monster is currently fading.
             damage (int): The amount of damage the monster can inflict.
         """
+        super().__init__()
+
+
         # Select a random image from the provided folder
-        random_image, image_path = self.get_random_image(image_folder)
-        
-        # Load the image and initialize the parent class
-        super().__init__(image_path, x, y, monster_speed)
-       
+        random_image, image_path = ImageHelper.get_random_image(image_folder)
+
+        self.image_path = image_path
+        self.x = x
+        self.y = y
+        self.window_height = window_height
+        self.image = pygame.image.load(self.image_path)
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
+        self.speed = monster_speed
+
+        self.MONSTER_IMAGE = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
+        self.MONSTER_IMAGE.fill(pygame.Color('dodgerblue'))
+
         # Initialize fade out attributes
-        self.fade_start_time = None
-        self.fade_duration = 1000  # Default fade duration in milliseconds
-        self.is_fading = False
+        self.fade_start_time: int = 0
+        self.fade_duration = 4000  # Default fade duration in milliseconds
+        self.fade = False
+        self.alpha = 255
         self.window_height = window_height
         # the damage value is extracted from the image file name
         self.damage = int(''.join(filter(str.isdigit, random_image))) if any(char.isdigit() for char in random_image) else 1
-        
+
         #resize the image based on the monster's damage
         new_width = int(self.rect.width * (1 + (self.damage / 10)))
         new_height = int(self.rect.height * (1 + (self.damage / 10)))
@@ -62,25 +77,26 @@ class Monster(GameObject[GameObjectType]):
         Args:
             current_time (int): The current time in milliseconds.
         """
-        self.is_fading = True
+        self.fade = True
         self.fade_start_time = current_time
 
-    def update(self) -> None:
-        """
-        Updates the state of the monster, including handling the fade-out effect.
-        Args:
-            current_time (int): The current time in milliseconds.
-        """
+    def update(self):
+        # Updates the state of the monster, including handling the fade-out effect
         current_time = pygame.time.get_ticks()
         self.rect.y += self.speed
-        
-        # Check if the monster is fading out or if it has to fade out simulate the fade out effect
-        if self.is_fading:
-            elapsed_time = current_time - self.fade_start_time
-            alpha = 255 - int(255 * elapsed_time / self.fade_duration)
-            self.image.set_alpha(alpha)
-            if alpha <= 0:
+
+        # Handle fade-out effect if fading
+        if self.fade:  # If the fade effect is activated.
+            # Reduce the alpha each frame, create a new copy of the original
+            # image and fill it with white (with the self.alpha value)
+            # and pass the BLEND_RGBA_MULT special_flag to reduce the alpha.
+            self.alpha = max(0, self.alpha-5)  # alpha should never be < 0.
+            self.image = self.MONSTER_IMAGE.copy()
+            self.image.fill((255, 255, 255, self.alpha), special_flags=pygame.BLEND_RGBA_MULT)
+            if self.alpha <= 0:  # Kill the sprite when the alpha is <= 0.
                 self.kill()
-        
+
+
+        # If the monster moves out of the window, kill it
         if self.rect.top > self.window_height:
             self.kill()

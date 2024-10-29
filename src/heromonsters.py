@@ -3,6 +3,7 @@ import pygame
 import random
 import math
 
+from typing import cast
 from entities import Hero, Monster, Coin, Jewel
 
 # --- Constants ---
@@ -26,13 +27,15 @@ MAX_JEWELS: int = 1
 # --- Font ---
 FONT_SIZE: int = 24
 FONT_SIZE_SMALL: int = 16
+FONT_SIZE_LARGE: int = 48
 
 # --- Colors ---
 BLACK: tuple = (0, 0, 0)
 WHITE: tuple = (200, 200, 200)
-WHITETRANS: tuple = (200, 200, 200, 100)
+WHITETRANS: tuple = (200, 200, 200, 150)
 GOLDENTRANS: tuple = (255, 215, 0, 100)
 REDFIRETRANS: tuple = (178, 34, 34, 80)
+
 
 # --- Paths ---
 BASE_PATH: str = os.path.dirname(__file__)
@@ -107,9 +110,13 @@ class Game:
 
         # Load Emoji font
         self.emoji_font = pygame.font.Font(os.path.join(FONTS_PATH, 'Symbola.ttf') , FONT_SIZE)
-        
+
         #Load standard font
         self.font = pygame.font.Font(None, FONT_SIZE)
+
+        # Load large font
+        self.font_xlarge = pygame.font.Font(os.path.join(FONTS_PATH, 'Symbola.ttf') , FONT_SIZE_LARGE)
+        self.font_xlarge.set_bold(True)
 
         # Load images
         self.bg_image = pygame.image.load(os.path.join(SPRITES_PATH, 'bg.png')).convert()
@@ -123,7 +130,7 @@ class Game:
 
         self.hero_image = pygame.image.load(os.path.join(SPRITES_PATH, 'hero.png')).convert_alpha()
         self.coin_image = pygame.image.load(os.path.join(SPRITES_PATH, 'coin.png')).convert_alpha()
-       
+
         self.collected_jewels = 0
         self.collected_coins = 0
 
@@ -135,6 +142,9 @@ class Game:
 
         # Load music and sound effects
         self.__load_game_sounds()
+
+        self.hero: Hero = self.create_hero()
+
 
         self.score = 0
         self.game_over = False
@@ -162,16 +172,6 @@ class Game:
         self.jewels = pygame.sprite.Group()
         self.potions = pygame.sprite.Group()
 
-        # Create hero
-        self.hero = Hero(
-            os.path.join(SPRITES_PATH, 'hero.png'),
-            WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
-            WINDOW_HEIGHT - self.hero_image.get_height() - 10,
-            HERO_SPEED,
-            WINDOW_WIDTH
-        )
-        self.all_sprites.add(self.hero)
-    
     def __load_game_sounds(self) -> None:
         """
         Loads and initializes the game sounds.
@@ -193,7 +193,7 @@ class Game:
         Creates a new monster instance with a random horizontal position.
 
         Returns:
-            Monster: A new Monster object initialized with the specified image path, 
+            Monster: A new Monster object initialized with the specified image path,
                      random x-coordinate, y-coordinate set to 0, speed, and window height.
         """
         x = random.randint(0, WINDOW_WIDTH - 64)
@@ -302,22 +302,28 @@ class Game:
         Returns:
             None
         """
-        jewels_text = self.emoji_font.render(f"💎 {self.collected_jewels}", True, WHITETRANS)
+        jewels_text = self.emoji_font.render(f"💎 {self.collected_jewels}", True, WHITE)
         self.screen.blit(jewels_text, (10, 170))
-    
+
     def display_game_over(self) -> None:
         """
         Displays the game over screen with a blinking hero and a message prompting the player to press Space to restart.
-        This method renders a "Game Over" message with an emoji font and blits it to the center of the screen. 
+        This method renders a "Game Over" message with an emoji font and blits it to the center of the screen.
         It also calls the blink_hero method to create a blinking effect on the hero character.
         Returns:
             None
         """
         self.blink_hero()
 
-        game_over_text = self.emoji_font.render("💀 Game Over! Press Space to Restart", True, WHITETRANS)
-        text_rect = game_over_text.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
-        self.screen.blit(game_over_text, text_rect)
+        text = f"💀 Game Over! Press Space to Restart"
+
+        game_over_text_red = self.font_xlarge.render(text, True, REDFIRETRANS)
+        text_rect = game_over_text_red.get_rect(center=(WINDOW_WIDTH // 2, WINDOW_HEIGHT // 2))
+        game_over_text_golden = self.font_xlarge.render(text, True, GOLDENTRANS)
+        text_rect_golden = game_over_text_golden.get_rect(center=(WINDOW_WIDTH // 2 + 5, WINDOW_HEIGHT // 2 + 5))
+
+        self.screen.blit(game_over_text_red, text_rect)
+        self.screen.blit(game_over_text_golden, text_rect_golden)
 
         pygame.display.flip()
 
@@ -378,7 +384,7 @@ class Game:
         """
         # Create a mask from the hero image (only the non-transparent pixels will be considered)
         mask = pygame.mask.from_surface(self.hero_image)
-        
+
         # Create a surface from the mask where only non-transparent pixels will be highlighted
         mask_surface = mask.to_surface(setcolor=GOLDENTRANS, unsetcolor=(0, 0, 0, 0))  # Golden mask for visible pixels
 
@@ -441,10 +447,10 @@ class Game:
         self.collected_jewels = 0
 
         # Create hero with the full image path
-        self.create_hero()
+        self.hero = self.create_hero()
         self.all_sprites.add(self.hero)
 
-    def create_hero(self):
+    def create_hero(self) -> Hero:
         """
         Creates a hero character for the game.
 
@@ -454,22 +460,25 @@ class Game:
         Attributes:
             self.hero (Hero): An instance of the Hero class representing the hero character.
         """
-        self.hero = Hero(
+        hero: Hero = Hero(
             os.path.join(SPRITES_PATH, 'hero.png'),
             WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
             WINDOW_HEIGHT - self.hero_image.get_height() - 10,
             HERO_SPEED,
-            WINDOW_WIDTH
+            WINDOW_WIDTH,
+            self.all_sprites
         )
+        self.all_sprites.add(hero)
+        return hero
 
     def handle_monster_collision(self, colliding_monsters, current_time):
         """
         Handles the collision between the hero and monsters.
-        
+
         Args:
             colliding_monsters (list): List of monsters colliding with the hero.
             current_time (int): The current time in milliseconds.
-        
+
         Returns:
             None
         """
@@ -486,9 +495,8 @@ class Game:
                 self.hero.life_points -= monster.damage  # Decrease hero life
 
                 # Mark the monster for removal
-                monster.is_fading = True
-            monster.fade_start_time = current_time
-            
+                monster.fade = True
+
                 # Check if the hero has run out of life
             if self.hero.life_points <= 0:
                 self.game_over = True
@@ -533,12 +541,12 @@ class Game:
 
 
             if not self.game_over and not self.paused and not self.hero_is_blinking:
-                
+
                 # --- Update ---
                 self.all_sprites.update()
 
                 for monster in self.monsters:
-                    if monster.is_fading:
+                    if monster.fade:
                         if not monster.fade_out(current_time):
                             self.monsters.remove(monster)
                             self.all_sprites.remove(monster)
@@ -557,17 +565,18 @@ class Game:
 
                 if len(self.jewels) < MAX_JEWELS and random.random() < JEWEL_SPAWN_PROBABILITY:
                     jewel = self.create_jewel()
-                    
+
                     if self.is_positionable(jewel):
                         self.jewels.add(jewel)
                         self.all_sprites.add(jewel)
 
                 # --- Collision Detection ---
-                colliding_monsters = pygame.sprite.spritecollide(self.hero, self.monsters, True)
+
+                colliding_monsters = pygame.sprite.spritecollide(self.hero, self.monsters, True) # type: ignore
                 if colliding_monsters:
                     self.handle_monster_collision(colliding_monsters, current_time)
 
-                for coin in pygame.sprite.spritecollide(self.hero, self.coins, True):
+                for coin in pygame.sprite.spritecollide(self.hero, self.coins, True): # type: ignore
                     self.score += coin.value
                     self.collected_coins += 1
 
@@ -577,7 +586,7 @@ class Game:
                     sound.set_volume(volume)
                     sound.play()
 
-                for jewel in pygame.sprite.spritecollide(self.hero, self.jewels, True):
+                for jewel in pygame.sprite.spritecollide(self.hero, self.jewels, True): # type: ignore
                     self.score += jewel.value
                     self.collected_jewels += 1
 
@@ -625,7 +634,7 @@ class Game:
         pygame.quit()
 
     def is_positionable(self, asset) -> bool:
-        return all( not pygame.sprite.spritecollideany(asset, group) 
+        return all( not pygame.sprite.spritecollideany(asset, group)
                             for group in [self.jewels, self.coins, self.monsters, self.potions])
 
 

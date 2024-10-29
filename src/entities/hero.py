@@ -1,7 +1,7 @@
 import pygame
-from .gameobject import GameObject, GameObjectType
 
-class Hero(GameObject[GameObjectType]):
+
+class Hero(pygame.sprite.Sprite):
     """
     Hero class represents the main character in the game.
     Attributes:
@@ -17,7 +17,7 @@ class Hero(GameObject[GameObjectType]):
         update():
             Updates the hero's position based on user input.
     """
-    def __init__(self, image_path: str, x: int, y: int, hero_speed: int, window_width: int) -> None:
+    def __init__(self, image_path: str, x: int, y: int, hero_speed: int, window_width: int, *groups: pygame.sprite.Group) -> None:
         """
         Initialize a Hero object.
 
@@ -36,13 +36,22 @@ class Hero(GameObject[GameObjectType]):
             collision_cooldown (int): Cooldown period in milliseconds between collisions.
             last_collision_time (int): Timestamp of the last collision.
         """
-        super().__init__(image_path, x, y, hero_speed)
+        super().__init__(*groups)
+        self.image_path = image_path
+        self.x = x
+        self.y = y
+        self.speed = hero_speed
         self.window_width = window_width
         self.life_points = 10
         self.inmunity = False
         self.enhanced = False
         self.collision_cooldown = 1000  # 1000 milliseconds = 1 second cooldown
         self.last_collision_time = 0  # Track the last time a collision happened
+        self.image = pygame.image.load(self.image_path)
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
+
 
 
     def update(self) -> None:

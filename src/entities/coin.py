@@ -1,7 +1,8 @@
 import random
-from .gameobject import GameObject, GameObjectType
+import pygame
 
-class Coin(GameObject[GameObjectType]):
+
+class Coin(pygame.sprite.Sprite):
     """
     Coin class represents a collectible coin in the game.
     Attributes:
@@ -33,12 +34,20 @@ class Coin(GameObject[GameObjectType]):
             There is a 50% chance that the coin's color will be changed to a random color.
         """
         # Load the base image
-        super().__init__(image_path, x, y, speed)
+        super().__init__()
+        self.image_path = image_path
+        self.x = x
+        self.y = y
         self.window_height = window_height
+        self.image = pygame.image.load(self.image_path)
+        self.rect = self.image.get_rect()
+        self.rect.x = self.x
+        self.rect.y = self.y
+        self.speed = speed
 
         # Assign a random value to the coin bwtween 1 and 25 taking account inverse weight
         self.value = random.choices([1, 2, 3, 4, 5], weights=[0.5, 0.2, 0.15, 0.1, 0.05])[0]
-       
+
 
     def update(self) -> None:
         """
