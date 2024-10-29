@@ -35,13 +35,13 @@ jobs:
         git log -n 10 --pretty=format:"- %s" >> release_notes.md
 
     - name: Upload Windows artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: heroesvsmonsters-windows.exe
         path: dist\heroesvsmonsters-windows.exe
 
     - name: Upload release notes
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: release_notes
         path: release_notes.md
@@ -70,7 +70,7 @@ jobs:
       run: mv dist/run_game dist/heroesvsmonsters-linux  # Cambia el nombre para el release
 
     - name: Upload Linux artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: heroesvsmonsters-linux
         path: dist/heroesvsmonsters-linux
@@ -79,7 +79,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - name: Check out repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -96,10 +96,10 @@ jobs:
         pyinstaller run_game.spec
 
     - name: Rename Executable
-      run: mv dist/run_game dist/heroesvsmonsters-macos  # Cambia el nombre para el release
+      run: mv dist/run_game dist/heroesvsmonsters-macos
 
     - name: Upload macOS artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: heroesvsmonsters-macos
         path: dist/heroesvsmonsters-macos
@@ -110,25 +110,25 @@ jobs:
 
     steps:
     - name: Download Windows artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: heroesvsmonsters-windows.exe
         path: .
 
     - name: Download Linux artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: heroesvsmonsters-linux
         path: .
 
     - name: Download macOS artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: heroesvsmonsters-macos
         path: .
 
     - name: Download release notes
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: release_notes
         path: .
@@ -137,6 +137,9 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y gh
+
+    - name: Check out repository code
+      uses: actions/checkout@v4
 
     - name: Create GitHub Release with GitHub CLI
       env:
