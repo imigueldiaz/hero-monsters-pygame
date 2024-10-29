@@ -1,3 +1,6 @@
+[![Qodana](https://github.com/imigueldiaz/hero-monsters-pygame/actions/workflows/qodana_code_quality.yml/badge.svg)](https://github.com/imigueldiaz/hero-monsters-pygame/actions/workflows/qodana_code_quality.yml)
+
+
 # Hero vs Monsters Game
 
 This is a fun experiment to learn PyGame by creating a simple game where a hero battles against monsters and collects coins.
