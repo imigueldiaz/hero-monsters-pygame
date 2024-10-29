@@ -4,5 +4,7 @@ profile:
   name: qodana.recommended
 include:
   - name: CheckDependencyLicenses
-
+bootstrap: |
+  pip install -r requirements.txt
+  
 
