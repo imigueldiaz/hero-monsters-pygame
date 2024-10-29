@@ -1,6 +1,23 @@
 import os
 import random
+
 class ImageHelper:
+    """
+    A helper class for working with images and calculating weights for random selection.
+
+    This class provides static methods to:
+    - Calculate weights for selecting a random image from a list of image files.
+    - Retrieve a random image file name and its full path from a specified folder.
+    """
+
+    def __init__(self):
+        """
+        Initializes an instance of the ImageHelper class.
+
+        This class provides static methods for working with images and calculating weights for random selection.
+        """
+        pass
+
     @staticmethod
     def calculate_weights(image_files: list) -> list:
         """
