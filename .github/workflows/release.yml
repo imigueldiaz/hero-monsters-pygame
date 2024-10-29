@@ -113,10 +113,30 @@ jobs:
     - name: Check out repository code
       uses: actions/checkout@v4
 
-    - name: Download Windows artifact
+    - name: Download artifacts Windows
       uses: actions/download-artifact@v4
       with:
+        name: heroesvsmonsters-windows.exe
         path: .
+
+    - name: Download artifacts Linux
+      uses: actions/download-artifact@v4
+      with:
+        name: heroesvsmonsters-linux
+        path: .
+
+    - name: Download artifacts macOS
+      uses: actions/download-artifact@v4
+      with:
+        name: heroesvsmonsters-macos
+        path: .
+
+    - name: Download release notes
+      uses: actions/download-artifact@v4
+      with:
+        name: release_notes
+        path: .
+
 
     - name: Install GitHub CLI
       run: |
