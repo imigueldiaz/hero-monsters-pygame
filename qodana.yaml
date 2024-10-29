@@ -5,6 +5,3 @@ profile:
 include:
   - name: CheckDependencyLicenses
 
-# Añadir configuración del intérprete de Python
-python:
-  interpreter: /usr/local/bin/python  # Ajusta esto según la ubicación de tu intérprete de Python
