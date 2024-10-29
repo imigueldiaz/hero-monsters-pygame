@@ -1,14 +1,13 @@
-name: Create Release
+name: Create Multi-Platform Release
 
 on:
   push:
     tags:
-      - 'v*'  # Activa el workflow solo en tags que comiencen con "v", como "v1.0", "v2.1", etc.
+      - 'v*'  # Activar el workflow solo en tags que comiencen con "v"
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
+  build-windows:
+    runs-on: windows-latest
     steps:
     - name: Check out repository
       uses: actions/checkout@v3
@@ -23,29 +22,88 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Build executable with PyInstaller
+    - name: Build Windows executable with PyInstaller
       run: |
-        pyinstaller run_game.spec
+        pyinstaller --onefile --name heroesvsmonsters --add-data "assets;assets" --paths src run_game.spec
 
-    - name: Rename Executable
-      # Cambia el nombre del archivo ejecutable generado
-      run: mv dist/run_game.exe dist/heroesvsmonsters.exe
-
-    - name: Upload artifact
+    - name: Upload Windows artifact
       uses: actions/upload-artifact@v3
       with:
-        name: dist-file
-        path: dist/heroesvsmonsters.exe
+        name: heroesvsmonsters-windows.exe
+        path: dist\heroesvsmonsters.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Build Linux executable with PyInstaller
+      run: |
+        pyinstaller --onefile --name heroesvsmonsters --add-data "assets:assets" --paths src run_game.spec
+
+    - name: Upload Linux artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: heroesvsmonsters-linux
+        path: dist/heroesvsmonsters
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Build macOS executable with PyInstaller
+      run: |
+        pyinstaller --onefile --name heroesvsmonsters --add-data "assets:assets" --paths src run_game.spec
+
+    - name: Upload macOS artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: heroesvsmonsters-macos
+        path: dist/heroesvsmonsters
 
   release:
-    needs: build
+    needs: [build-windows, build-linux, build-macos]
     runs-on: ubuntu-latest
-
     steps:
-    - name: Download artifact
+    - name: Download Windows artifact
       uses: actions/download-artifact@v3
       with:
-        name: dist-file
+        name: heroesvsmonsters-windows.exe
+        path: .
+
+    - name: Download Linux artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: heroesvsmonsters-linux
+        path: .
+
+    - name: Download macOS artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: heroesvsmonsters-macos
         path: .
 
     - name: Install GitHub CLI
@@ -63,6 +121,9 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        gh release create ${{ github.ref_name }} ./dist/heroesvsmonsters.exe \
+        gh release create ${{ github.ref_name }} \
+          ./heroesvsmonsters-windows.exe \
+          ./heroesvsmonsters-linux \
+          ./heroesvsmonsters-macos \
           --title "Release ${{ github.ref_name }}" \
-          --notes "### Latest release changes:\n$(git log -n 10 --pretty=format:'- %s')"
+          --notes "### Latest changes on this release:\n$(git log -n 10 --pretty=format:'- %s')"
