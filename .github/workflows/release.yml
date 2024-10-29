@@ -5,12 +5,15 @@ on:
     tags:
       - 'v*'  # Activar el workflow solo en tags que comiencen con "v"
 
+permissions:
+  contents: write  # Grant write permissions to contents
+
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
     - name: Check out repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
