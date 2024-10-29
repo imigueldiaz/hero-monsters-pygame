@@ -24,7 +24,7 @@ jobs:
 
     - name: Build Windows executable with PyInstaller
       run: |
-        pyinstaller --onefile --name heroesvsmonsters --add-data "assets;assets" --paths src run_game.spec
+        pyinstaller run_game.spec
 
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v3
@@ -50,7 +50,7 @@ jobs:
 
     - name: Build Linux executable with PyInstaller
       run: |
-        pyinstaller --onefile --name heroesvsmonsters --add-data "assets:assets" --paths src run_game.spec
+        pyinstaller run_game.spec
 
     - name: Upload Linux artifact
       uses: actions/upload-artifact@v3
@@ -76,7 +76,7 @@ jobs:
 
     - name: Build macOS executable with PyInstaller
       run: |
-        pyinstaller --onefile --name heroesvsmonsters --add-data "assets:assets" --paths src run_game.spec
+        pyinstaller run_game.spec
 
     - name: Upload macOS artifact
       uses: actions/upload-artifact@v3
