@@ -109,37 +109,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
     - name: Download Windows artifact
       uses: actions/download-artifact@v4
       with:
-        name: heroesvsmonsters-windows.exe
-        path: .
-
-    - name: Download Linux artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: heroesvsmonsters-linux
-        path: .
-
-    - name: Download macOS artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: heroesvsmonsters-macos
-        path: .
-
-    - name: Download release notes
-      uses: actions/download-artifact@v4
-      with:
-        name: release_notes
         path: .
 
     - name: Install GitHub CLI
       run: |
         sudo apt update
         sudo apt install -y gh
-
-    - name: Check out repository code
-      uses: actions/checkout@v4
 
     - name: Create GitHub Release with GitHub CLI
       env:
