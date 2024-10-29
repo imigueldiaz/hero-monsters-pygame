@@ -3,7 +3,7 @@ name: Create Release
 on:
   push:
     tags:
-      - 'v*'  # Esto activa el workflow solo en tags que comiencen con "v", como "v1.0", "v2.0", etc.
+      - 'v*'  # Activa el workflow solo en tags que comiencen con "v", como "v1.0", "v2.1", etc.
 
 jobs:
   build:
@@ -27,15 +27,20 @@ jobs:
       run: |
         pyinstaller run_game.spec
 
+    - name: Rename Executable
+      # Cambia el nombre del archivo ejecutable generado
+      run: mv dist/run_game.exe dist/heroesvsmonsters.exe
+
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
         name: dist-file
-        path: dist/run_game.exe
+        path: dist/heroesvsmonsters.exe
 
   release:
     needs: build
     runs-on: ubuntu-latest
+
     steps:
     - name: Download artifact
       uses: actions/download-artifact@v3
@@ -43,24 +48,21 @@ jobs:
         name: dist-file
         path: .
 
-    - name: Create GitHub Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref_name }}
-        release_name: Release ${{ github.ref_name }}
-        body: |
-          Release generado automáticamente.
-        draft: false
-        prerelease: false
+    - name: Install GitHub CLI
+      run: |
+        sudo apt update
+        sudo apt install -y gh
 
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
+    - name: Authenticate GitHub CLI
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/run_game.exe
-        asset_name: heroesvsmonsters.exe
-        asset_content_type: application/octet-stream
+      run: |
+        echo $GITHUB_TOKEN | gh auth login --with-token
+
+    - name: Create GitHub Release with GitHub CLI
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        gh release create ${{ github.ref_name }} ./dist/heroesvsmonsters.exe \
+          --title "Release ${{ github.ref_name }}" \
+          --notes "### Latest release changes:\n$(git log -n 10 --pretty=format:'- %s')"
