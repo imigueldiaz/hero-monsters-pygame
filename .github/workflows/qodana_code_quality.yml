@@ -31,10 +31,11 @@ jobs:
           pip install -r requirements.txt
 
       - name: 'Qodana Scan'
-        uses: JetBrains/qodana-action@v2024.1
+        uses: JetBrains/qodana-action@v2024.2
         with:
           pr-mode: false
-          args: --linter,jetbrains/qodana-python:2024.2
+          args: --apply-fixes
+          push-fixes: pull-request
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_845925216 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
