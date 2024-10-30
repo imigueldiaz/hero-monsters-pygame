@@ -51,7 +51,7 @@ jobs:
         git config --local user.email "github-actions@github.com"
         git add CHANGELOG.md
         git commit -m "chore: update CHANGELOG.md for ${{ github.ref }}"
-        git push
+        git push origin HEAD:main
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
