@@ -32,12 +32,12 @@ jobs:
     - name: Rename Executable
       run: move dist\run_game.exe dist\heroesvsmonsters-windows.exe  # Cambia el nombre para el release
 
-    - name: Install changelog generator
-      run: pip install changelog-md
-
-    - name: Generate changelog
+    - name: Update Changelog
+      shell: pwsh
       run: |
-        python -m changelog_md  --logname CHANGELOG.md ${{ github.ref_name }} "Release ${{ github.ref_name }}"
+        $tag = $env:GITHUB_REF.Replace('refs/tags/', '')
+        python -m changelog_md --logname CHANGELOG.md $tag "Release $tag"
+
 
     - name: Commit and Push changes
       run: |
