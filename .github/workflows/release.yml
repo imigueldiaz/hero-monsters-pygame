@@ -32,10 +32,28 @@ jobs:
     - name: Rename Executable
       run: move dist\run_game.exe dist\heroesvsmonsters-windows.exe  # Cambia el nombre para el release
 
-    - name: Create release notes
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - name: Install dependencies
       run: |
-        echo "### Latest changes on this release:" > release_notes.md
-        git log -n 10 --pretty=format:"- %s" >> release_notes.md
+        npm install -g conventional-changelog-cli
+
+    - name: Generate Changelog
+      run: |
+        conventional-changelog -p angular -i CHANGELOG.md -s
+
+    - name: Commit and Push changes
+      run: |
+        git config --local user.name "github-actions"
+        git config --local user.email "github-actions@github.com"
+        git add CHANGELOG.md
+        git commit -m "chore: update CHANGELOG.md for ${{ github.ref }}"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload Windows artifact
       uses: actions/upload-artifact@v4
@@ -47,13 +65,13 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: release_notes
-        path: release_notes.md
+        path: CHANGELOG.md
 
   build-linux:
     runs-on: ubuntu-latest
     steps:
     - name: Check out repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -155,4 +173,4 @@ jobs:
           ./heroesvsmonsters-linux \
           ./heroesvsmonsters-macos \
           --title "Release ${{ github.ref_name }}" \
-          --notes-file release_notes.md
+          --notes-file CHANGELOG.md
