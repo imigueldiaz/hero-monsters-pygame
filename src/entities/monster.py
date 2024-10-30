@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
+
 import pygame
 
-from src.imagehelper import ImageHelper
+from src import ImageHelper
 
 class Monster(pygame.sprite.Sprite):
     """

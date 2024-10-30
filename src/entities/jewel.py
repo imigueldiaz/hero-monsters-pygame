@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
+
 import random
 
-from src.imagehelper import ImageHelper
+from src import ImageHelper
 from .coin import Coin
 
 class Jewel(Coin):

@@ -1,15 +1,18 @@
-# run_game.py
-
+#!/usr/bin/env python3
 import sys
 import os
+from pathlib import Path
 
-# Add the src folder to the Python module search path
-sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+# Obtain the root directory of the project
+PROJECT_ROOT = Path(__file__).parent.absolute()
+SRC_PATH = os.path.join(PROJECT_ROOT, 'src')
 
-# Now you can safely import Game
-from heromonsters import Game
+# Add the project root and src directory to the sys.path
+sys.path.extend([str(PROJECT_ROOT), SRC_PATH])
 
-# Initialize and run the game
+# Now we can import the Game class from the src package
+from src import Game
+
 if __name__ == "__main__":
     game = Game()
     game.run()
