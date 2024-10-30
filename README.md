@@ -59,4 +59,4 @@ This project is only a fun experiment to learn PyGame. Feel free to explore, mod
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the GPLv3 License to be compliant with the PyGame license.
