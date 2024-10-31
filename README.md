@@ -59,4 +59,5 @@ This project is only a fun experiment to learn PyGame. Feel free to explore, mod
 
 ## License
 
-This project is licensed under the GPLv3 License to be compliant with the PyGame license.
+This project is licensed under the [![License: LGPL v2.1](https://img.shields.io/badge/license-LGPL--2.1-blue.svg)](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html)
+ to be compliant with the PyGame license.
