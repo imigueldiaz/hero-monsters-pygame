@@ -1,7 +1,9 @@
+import os
 import unittest
 import pygame
 from unittest.mock import MagicMock, patch
 from src.entities import Hero
+from src.heromonsters import SPRITES_PATH
 
 class TestHeroInit(unittest.TestCase):
 
@@ -52,6 +54,27 @@ class TestHeroInit(unittest.TestCase):
         groups = [MagicMock()]
         with self.assertRaises(pygame.error):
             Hero(image_path, x, y, hero_speed, window_width, *groups)
+
+    def test_valid_image_path(self):
+        """Tests that Hero's __init__ method raises a ValueError when given an image path
+        that is not a string."""
+        image_path = os.path.join(SPRITES_PATH, 'hero.png')
+        x = 10
+        y = 20
+        hero_speed = 5
+        window_width = 800
+        groups = [MagicMock()]
+        hero =Hero(image_path, x, y, hero_speed, window_width, *groups)
+        self.assertEqual(hero.image_path, image_path)
+        self.assertEqual(hero.x, x)
+        self.assertEqual(hero.y, y)
+        self.assertEqual(hero.speed, hero_speed)
+        self.assertEqual(hero.window_width, window_width)
+        self.assertEqual(hero.life_points, 10)
+        self.assertFalse(hero.immunity)
+        self.assertFalse(hero.enhanced)
+        self.assertEqual(hero.collision_cooldown, 1000)
+        self.assertEqual(hero.last_collision_time, 0)
 
     @patch('pygame.image.load', return_value=MagicMock())
     def test_init_invalid_x(self, mock_image_load):
