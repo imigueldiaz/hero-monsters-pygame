@@ -40,6 +40,20 @@ class Hero(pygame.sprite.Sprite):
             last_collision_time (int): Timestamp of the last collision.
         """
         super().__init__(*groups)
+
+        if hero_speed < 0:
+            raise ValueError("Hero speed must be a non-negative value.")
+
+        if window_width < 0:
+            raise ValueError("Window width must be a non-negative value.")
+
+        if x < 0:
+            raise ValueError("Initial x-coordinate must be a non-negative value.")
+
+        if y < 0:
+            raise ValueError("Initial y-coordinate must be a non-negative value.")
+
+
         self.image_path = image_path
         self.x = x
         self.y = y

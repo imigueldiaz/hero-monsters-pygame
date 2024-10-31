@@ -2,7 +2,7 @@
 
 import pygame
 
-from src import ImageHelper
+from src.helpers import ImageHelper
 
 class Monster(pygame.sprite.Sprite):
     """

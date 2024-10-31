@@ -4,11 +4,17 @@ import math
 import os
 import random
 import sys
-from typing import TypeVar, cast
+from typing import TypeVar, cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from src.entities.hero import Hero
+    from src.entities.monster import Monster
+    from src.entities.coin import Coin
+    from src.entities.jewel import Jewel
+
 
 import pygame
 
-from entities import Hero, Monster, Coin, Jewel
 
 # --- Type Hint ---
 # Generic type hint for sprite objects
@@ -131,7 +137,9 @@ class Game:
         # Load music and sound effects
         self.__load_game_sounds()
 
-        self.hero: Hero = self.create_hero()
+        # Create hero
+        from entities import Hero
+        self.hero:Hero = self.create_hero()
 
 
         self.score = 0
@@ -176,7 +184,7 @@ class Game:
         self.JEWEL_SOUND = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'ping02.mp3'))
         self.HIT = pygame.mixer.Sound(os.path.join(SOUNDS_PATH, 'hit01.mp3'))
 
-    def create_hero(self) -> Hero:
+    def create_hero(self) -> 'Hero':
         """
         Creates a hero character for the game.
 
@@ -186,6 +194,7 @@ class Game:
         Attributes:
             self.hero (Hero): An instance of the Hero class representing the hero character.
         """
+        from  entities import Hero
         hero: Hero = Hero(
             os.path.join(SPRITES_PATH, 'hero.png'),
             WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
@@ -196,7 +205,7 @@ class Game:
         )
         return hero
 
-    def create_coin(self) -> Coin:
+    def create_coin(self) -> 'Coin':
         """
         Create a new Coin object positioned randomly along the x-axis and just above the top of the screen.
 
@@ -205,6 +214,7 @@ class Game:
         """
         x = random.randint(0, WINDOW_WIDTH - self.coin_image.get_width())
         y = -self.coin_image.get_height()  # Initialize outside the screen, above
+        from entities import Coin
         return Coin(
             os.path.join(SPRITES_PATH, 'coin.png'),  # Pass the full path for the coin image
             x,
@@ -214,7 +224,7 @@ class Game:
         )
 
     @staticmethod
-    def create_jewel() -> Jewel:
+    def create_jewel() -> 'Jewel':
         """
         Creates a new Jewel object with a randomly selected image and initial position.
         The jewel image is randomly chosen from a predefined list of jewel images.
@@ -226,6 +236,7 @@ class Game:
         x = random.randint(0, WINDOW_WIDTH - 64)
         y = 0
 
+        from entities import Jewel
         return Jewel(
             JEWELS_PATH,
             x,
@@ -234,7 +245,7 @@ class Game:
             WINDOW_HEIGHT
         )
     @staticmethod
-    def create_monster() -> Monster:
+    def create_monster() -> 'Monster':
         """
         Creates a new monster instance with a random horizontal position.
 
@@ -243,6 +254,7 @@ class Game:
                      random x-coordinate, y-coordinate set to 0, speed, and window height.
         """
         x = random.randint(0, WINDOW_WIDTH - 64)
+        from entities import Monster
         return Monster(
             MONSTERS_PATH,
             x,

@@ -2,7 +2,7 @@
 
 import random
 
-from src import ImageHelper
+import src.helpers
 from .coin import Coin
 
 class Jewel(Coin):
@@ -32,7 +32,7 @@ class Jewel(Coin):
             window_height (int): The height of the game window.
         """
         # Select a random image from the provided folder
-        _, image_path = ImageHelper.get_random_image(image_folder)
+        _, image_path = src.helpers.ImageHelper.get_random_image(image_folder)
 
         # Load the base image
         super().__init__(image_path, x, y, jewel_speed, window_height)
