@@ -1,8 +1,8 @@
 
 ---
 
-# v1.16 ( 2024.10.30 )
+# v1.20 ( 2024.11.01 )
 
 ```
-Stash changes before and after pulling in release workflow
+build(requirements-dev): Add pyinstaller to dev dependencies
 ```
