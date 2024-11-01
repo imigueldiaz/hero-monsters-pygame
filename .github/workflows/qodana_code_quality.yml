@@ -17,28 +17,6 @@ jobs:
       checks: write
       actions: write
     steps:
-      - name: Cleanup of Qodana caches
-        run: |
-          echo "Installing gh-actions-cache extension"
-          gh extension install actions/gh-actions-cache || true
-          echo "Listing all caches"
-          gh cache list --repo ${{ github.repository }} --limit 1000 --json id,key > cache_list.json
-
-          echo "Filtering caches matching 'qodana-*'"
-          CACHE_IDS=$(jq -r '.[] | select(.key | startswith("qodana-")) | .id' cache_list.json)
-
-          if [ -z "$CACHE_IDS" ]; then
-            echo "No Qodana caches found to delete."
-          else
-            for CACHE_ID in $CACHE_IDS; do
-              echo "Deleting cache with ID: $CACHE_ID"
-              gh cache delete "$CACHE_ID" --repo ${{ github.repository }}
-            done
-            echo "Qodana caches deleted"
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.ACTION_CLEAR_CACHES_TOKEN }}
-
 
       - uses: actions/checkout@v4
         with:
@@ -51,6 +29,8 @@ jobs:
           pr-mode: false
           args: --apply-fixes
           push-fixes: pull-request
+          use-caches: false
+
         env:
           QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_845925216 }}
           QODANA_ENDPOINT: 'https://qodana.cloud'
