@@ -24,9 +24,11 @@ jobs:
       with:
         python-version: "3.11"
 
+    - name: Create coverage directory
+      run: mkdir -p PYTHON/py/.qodana/code-coverage
+
     - name: Install dependencies
       run: |
-        mkdir -p PYTHON/py/.qodana/code-coverage
         python -m pip install --upgrade pip
         pip install coverage
       working-directory: PYTHON/py
@@ -46,7 +48,8 @@ jobs:
     - name: Qodana Scan
       uses: JetBrains/qodana-action@main
       env:
-        QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_PYTHON }}
+        QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_845925216 }}
+        QODANA_ENDPOINT: 'https://qodana.cloud'
       with:
         args: "-i,PYTHON/py,--linter,jetbrains/qodana-python:latest"
         pr-mode: false
