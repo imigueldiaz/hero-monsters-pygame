@@ -39,7 +39,7 @@ jobs:
         coverage xml -o .qodana/code-coverage/coverage.xml
       working-directory: PYTHON/py
       env:
-        PYTHONPATH: ${{ github.workspace }}
+        PYTHONPATH: ${{ github.workspace }}/src
 
     - name: Archive coverage data
       uses: actions/upload-artifact@v4
