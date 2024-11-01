@@ -56,6 +56,6 @@ jobs:
         QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_845925216 }}
         QODANA_ENDPOINT: 'https://qodana.cloud'
       with:
-        args: "-i,PYTHON/py,--linter,jetbrains/qodana-python:2024.2,--coverage-dir=PYTHON/py/.qodana/code-coverage"
+        args: "--linter,jetbrains/qodana-python:2024.2,--coverage-dir=PYTHON/py/.qodana/code-coverage"
         pr-mode: false
         use-caches: 'false'
