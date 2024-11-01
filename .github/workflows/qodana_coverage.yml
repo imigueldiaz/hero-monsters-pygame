@@ -35,11 +35,11 @@ jobs:
 
     - name: Run tests with coverage
       run: |
+        export PYTHONPATH="${PYTHONPATH}:/home/runner/work/hero-monsters-pygame/hero-monsters-pygame:/home/runner/work/hero-monsters-pygame/hero-monsters-pygame/src"
         coverage run -m pytest ../../tests -W ignore::DeprecationWarning
         coverage xml -o .qodana/code-coverage/coverage.xml
       working-directory: PYTHON/py
-      env:
-        PYTHONPATH: ${{ github.workspace }}/src
+
 
     - name: Archive coverage data
       uses: actions/upload-artifact@v4
