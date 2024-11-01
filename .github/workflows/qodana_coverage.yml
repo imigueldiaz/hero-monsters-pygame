@@ -35,7 +35,7 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        coverage run -m pytest -W ignore::DeprecationWarning
+        coverage run -m pytest ../../tests -W ignore::DeprecationWarning
         coverage xml -o .qodana/code-coverage/coverage.xml
       working-directory: PYTHON/py
 
