@@ -5,8 +5,8 @@ bootstrap: |
   pip install -r requirements-dev.txt
 profile:
   name: qodana.recommended
-include:
+exclude:
   - name: CheckDependencyLicenses
-
-
+include:
+  - name: VulnerableLibrariesGlobal
 
