@@ -1,12 +1,25 @@
 version: "1.0"
 linter: jetbrains/qodana-python:2024.2
 bootstrap: |
+  # Eliminar la configuración anterior de IntelliJ para evitar conflictos
   rm -rf .idea
+
+  # Instalar las dependencias necesarias incluyendo pytest, coverage, etc.
   pip install -r requirements-dev.txt
+
+  # Ejecutar los tests con coverage y generar el reporte XML
+  coverage run -m pytest -W ignore::DeprecationWarning
+  coverage xml -o coverage.xml
 profile:
   name: qodana.recommended
+metrics:
+  coverage:
+    enable: true
+    path: coverage.xml
+    type: "jacoco"
 exclude:
   - name: CheckDependencyLicenses
 include:
   - name: VulnerableLibrariesGlobal
+
 
