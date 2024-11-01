@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import re
 
 import pygame
 
@@ -60,24 +61,15 @@ class Monster(pygame.sprite.Sprite):
         self.alpha = 255
         self.window_height = window_height
 
-        def is_digit(character):
-            """
-            Checks if a given string `x` consists only of digits.
-
-            Args:
-                character (str): The string to be checked.
-
-            Returns:
-                bool: True if `x` consists only of digits, False otherwise.
-            """
-            return character.isdigit()
-
         # the damage value is extracted from the image file name
-        self.damage = int(''.join(filter(is_digit, random_image))) if any(char.isdigit() for char in random_image) else 1
+        # Extract the first sequence of digits from the filename
+        match = re.search(r'\d+', random_image)
+        self.damage = int(match.group()) if match else 1
 
         #resize the image based on the monster's damage
-        new_width = int(self.rect.width * (1 + (self.damage / 10)))
-        new_height = int(self.rect.height * (1 + (self.damage / 10)))
+        new_width = int(self.rect.width * (1 + (self.damage / 100)))
+        new_height = int(self.rect.height * (1 + (self.damage / 100)))
+
         self.image = pygame.transform.scale(self.image, (new_width, new_height))
 
     def fade_out(self, current_time) -> None:
