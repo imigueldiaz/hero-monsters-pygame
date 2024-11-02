@@ -129,5 +129,44 @@ class TestHeroInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             Hero(image_path, x, y, hero_speed, window_width, *groups)
 
+    @patch('pygame.key.get_pressed', return_value={pygame.K_LEFT: 1, pygame.K_RIGHT: 0})
+    @patch('pygame.image.load', return_value=MagicMock())
+    def test_update_moves_left(self, _, __):
+        """
+        Tests that Hero's update method moves the hero to the left when the left arrow
+        key is pressed.
+        """
+        hero = Hero('path/to/image.png', 50, 50, 5, 800, MagicMock())
+        hero.rect = pygame.Rect(50, 50, 50, 50)
+        initial_x = hero.rect.x
+        hero.update()
+        self.assertTrue(hero.rect.x < initial_x, "Hero should have moved to the left")
+
+    @patch('pygame.key.get_pressed', return_value={pygame.K_LEFT: 0, pygame.K_RIGHT: 1})
+    @patch('pygame.image.load', return_value=MagicMock())
+    def test_update_moves_right(self, _, __):
+        """
+        Tests that Hero's update method moves the hero to the right when the right arrow
+        key is pressed.
+        """
+        hero = Hero('path/to/image.png', 50, 50, 5, 800, MagicMock())
+        hero.rect = pygame.Rect(50, 50, 50, 50)
+        initial_x = hero.rect.x
+        hero.update()
+        self.assertTrue(hero.rect.x > initial_x, "Hero should have moved to the right")
+
+    @patch('pygame.key.get_pressed', return_value={pygame.K_LEFT: 0, pygame.K_RIGHT: 0})
+    @patch('pygame.image.load', return_value=MagicMock())
+    def test_update_no_movement(self, _y, __):
+        """
+        Tests that Hero's update method does not move the hero when no arrow keys are
+        pressed.
+        """
+        hero = Hero('path/to/image.png', 50, 50, 5, 800, MagicMock())
+        hero.rect = pygame.Rect(50, 50, 50, 50)
+        initial_x = hero.rect.x
+        hero.update()
+        self.assertEqual(hero.rect.x, initial_x, "Hero should not have moved")
+
 if __name__ == '__main__':
     unittest.main()
