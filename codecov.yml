@@ -8,11 +8,12 @@ comment:
   require_changes: no
   branches:
     - main
+  after_n_builds: 1  # Wait until after n builds to post the comment
 
 coverage:
   precision: 2
   round: up
-  range: "70...100"
+  range: "60...100"
 
 parsers:
   gcov:
