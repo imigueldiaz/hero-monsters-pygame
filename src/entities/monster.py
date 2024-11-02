@@ -96,7 +96,10 @@ class Monster(pygame.sprite.Sprite):
             # Reduce the alpha each frame, create a new copy of the original
             # image and fill it with white (with the self.alpha value)
             # and pass the BLEND_RGBA_MULT special_flag to reduce the alpha.
-            self.alpha = max(0, self.alpha-5)  # alpha should never be < 0.
+            if self.alpha > 255:
+                self.alpha = 255
+
+            self.alpha = max(0, self.alpha)  # alpha should never be < 0.
             self.image = self.MONSTER_IMAGE.copy()
             self.image.fill((255, 255, 255, self.alpha), special_flags=pygame.BLEND_RGBA_MULT)
             if self.alpha <= 0:  # Kill the sprite when the alpha is <= 0.
