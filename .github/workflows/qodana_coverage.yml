@@ -1,4 +1,4 @@
-name: Python - py coverage test
+name: Coverage to codecov.io
 
 on:
   workflow_dispatch:
@@ -11,8 +11,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: false # deactivate this job for now
-
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -25,38 +23,23 @@ jobs:
       with:
         python-version: "3.11"
 
-    - name: Create coverage directory
-      run: | 
-        mkdir -p PYTHON/py/.qodana/code-coverage
-        mkdir -p PYTHON/py/assets
-        cp -r assets/* PYTHON/py/assets/
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest pytest-cov coverage pygame
-      working-directory: PYTHON/py
+        pip install -r requirements-dev.txt
 
     - name: Run tests with coverage
       run: |
-        export PYTHONPATH="${PYTHONPATH}:/home/runner/work/hero-monsters-pygame/hero-monsters-pygame:/home/runner/work/hero-monsters-pygame/hero-monsters-pygame/src"
-        coverage run -m pytest ../../tests -W ignore::DeprecationWarning
-        coverage xml -i -o .qodana/code-coverage/coverage.xml
-      working-directory: PYTHON/py
+        export PYTHONPATH="${PYTHONPATH}:${{ github.workspace }}:${{ github.workspace }}/src"
+        coverage run -m pytest tests -W ignore::DeprecationWarning
+        coverage xml -i -o coverage.xml
 
-
-    - name: Archive coverage data
-      uses: actions/upload-artifact@v4
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
       with:
-        name: py-coverage-data
-        path: PYTHON/py/.qodana/code-coverage
+        files: coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
+        flags: pytest
+        name: pytest-coverage-report
+        fail_ci_if_error: true
 
-    - name: Qodana Scan
-      uses: JetBrains/qodana-action@main
-      env:
-        QODANA_TOKEN: ${{ secrets.QODANA_TOKEN_845925216 }}
-        QODANA_ENDPOINT: 'https://qodana.cloud'
-      with:
-        args: "--linter,jetbrains/qodana-python:2024.2,--coverage-dir=PYTHON/py/.qodana/code-coverage"
-        pr-mode: false
-        use-caches: 'false'
