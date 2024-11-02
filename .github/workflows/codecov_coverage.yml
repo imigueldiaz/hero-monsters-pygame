@@ -33,6 +33,7 @@ jobs:
         export PYTHONPATH="${PYTHONPATH}:${{ github.workspace }}:${{ github.workspace }}/src"
         coverage run -m pytest tests -W ignore::DeprecationWarning
         coverage xml -i -o coverage.xml
+        pytest --cov --junitxml=junit.xml -o junit_family=legacy -W ignore::DeprecationWarning
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -43,3 +44,8 @@ jobs:
         name: pytest-coverage-report
         fail_ci_if_error: true
 
+    - name: Upload test results to Codecov
+      if: ${{ !cancelled() }}
+      uses: codecov/test-results-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
