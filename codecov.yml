@@ -6,11 +6,21 @@ comment:
   layout: "header, diff, files"
   behavior: default
   require_changes: no
+  require_base: false
+  require_head: true
+  hide_project_coverage: false
   branches:
     - main
   after_n_builds: 1  # Wait until after n builds to post the comment
 
 coverage:
+  status:
+    project: #add everything under here, more options at https://docs.codecov.com/docs/commit-status
+      default:
+        # basic
+        target: auto #default
+        threshold: 0%
+        base: auto
   precision: 2
   round: up
   range: "60...100"
