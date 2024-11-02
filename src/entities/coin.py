@@ -36,6 +36,16 @@ class Coin(pygame.sprite.Sprite):
         """
         # Load the base image
         super().__init__()
+
+        if x < 0:
+            raise ValueError('x-coordinate must be non-negative')
+        if y < 0:
+            raise ValueError('y-coordinate must be non-negative')
+        if speed < 0:
+            raise ValueError('speed must be non-negative')
+        if window_height < 0:
+            raise ValueError('window height must be non-negative')
+
         self.image_path = image_path
         self.x = x
         self.y = y
@@ -46,6 +56,9 @@ class Coin(pygame.sprite.Sprite):
         self.rect.y = self.y
         self.speed = speed
 
+
+
+        # Apply a random color mask to the coin image with a 50% chance
         # Assign a random value to the coin between 1 and 25 taking account inverse weight
         self.value = random.choices([1, 2, 3, 4, 5], weights=[0.5, 0.2, 0.15, 0.1, 0.05])[0]
 

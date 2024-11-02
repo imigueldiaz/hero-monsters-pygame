@@ -1,4 +1,5 @@
 import os
+import shutil
 import unittest
 from unittest.mock import patch
 
@@ -45,10 +46,15 @@ class TestImageHelperInit(unittest.TestCase):
     def test_get_random_image(self):
         # Create a test folder with some image files
         test_folder = 'test_folder'
+        # Cleanup any existing folder before starting
+        if os.path.exists(test_folder):
+            shutil.rmtree(test_folder)
+        # Create the test folder
         os.mkdir(test_folder)
         image_files = ['image1.png', 'image2.jpg', 'image3.bmp']
         for image_file in image_files:
-            open(os.path.join(test_folder, image_file), 'w').close()
+            with open(os.path.join(test_folder, image_file), 'w') as f:
+                pass  # Ensures file is closed
 
         # Test that the function returns a tuple containing a random image file name and its full path
         random_image, image_path = ImageHelper.get_random_image(test_folder)
@@ -63,6 +69,10 @@ class TestImageHelperInit(unittest.TestCase):
     def test_empty_folder(self):
         # Create an empty test folder
         test_folder = 'test_folder'
+        # Cleanup any existing folder before starting
+        if os.path.exists(test_folder):
+            shutil.rmtree(test_folder)
+        # Create the test folder
         os.mkdir(test_folder)
 
         # Test that the function raises a ValueError when the specified folder is empty
@@ -80,10 +90,15 @@ class TestImageHelperInit(unittest.TestCase):
     def test_folder_with_no_valid_image_files(self):
         # Create a test folder with some non-image files
         test_folder = 'test_folder'
+        # Cleanup any existing folder before starting
+        if os.path.exists(test_folder):
+            shutil.rmtree(test_folder)
+        # Create the test folder
         os.mkdir(test_folder)
         non_image_files = ['file1.txt', 'file2.doc']
         for non_image_file in non_image_files:
-            open(os.path.join(test_folder, non_image_file), 'w').close()
+            with open(os.path.join(test_folder, non_image_file), 'w') as f:
+                pass
 
         # Test that the function raises a ValueError when the specified folder contains no valid image files
         with self.assertRaises(ValueError):
@@ -101,7 +116,8 @@ class TestImageHelperInit(unittest.TestCase):
         os.mkdir(test_folder)
         image_files = ['image1.png', 'image2.jpg', 'image3.bmp']
         for image_file in image_files:
-            open(os.path.join(test_folder, image_file), 'w').close()
+            with open(os.path.join(test_folder, image_file), 'w') as f:
+                pass  # Ensures file is closed
 
         # Mock the calculate_weights function to return some weights
         mock_calculate_weights.return_value = [0.5, 0.3, 0.2]
