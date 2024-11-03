@@ -18,6 +18,10 @@ class TestGame(unittest.TestCase):
         :return: None
         :rtype: NoneType
         """
+        pygame.init()
+        if not pygame.mixer.get_init():  # Verify that the mixer is initialized
+            pygame.mixer.init()  # Initialize the mixer
+
         self.game = Game()
         self.screen = pygame.Surface((800, 600))
         self.clock = pygame.time.Clock()
