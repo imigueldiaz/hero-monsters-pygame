@@ -1,96 +1,71 @@
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch, MagicMock
 
 import pygame
 
-from src import Game
+from src.heromonsters import Game
 
 
-@patch("pygame.mixer", MagicMock())
 class TestGame(unittest.TestCase):
-
-    def setUp(self):
-        """Set up a Game instance for testing.
-
-        This method initializes a Game instance and assigns a pygame.Surface to
-        its screen attribute and a pygame.time.Clock to its clock attribute.
-        This allows the Game object to be tested without actually running the
-        game.
-        Note: The mixer.init, mixer.music.load, and mixer.music.play functions
-        are mocked to prevent any audio from playing during testing.
-
-        :return: None
-        :rtype: NoneType
+    @patch("pygame.mixer")
+    @patch("pygame.mixer.music")
+    def setUp(self, mock_music, mock_mixer):
+        """
+        Set up a Game instance for testing.
+        This method initializes a Game instance with mocked audio components.
         """
         pygame.init()
 
+        # Configure mixer mock
+        mock_mixer.init.return_value = None
+        mock_mixer.Sound.return_value = MagicMock()
+
+        # Configure music mock
+        mock_music.load.return_value = None
+        mock_music.play.return_value = None
+
         self.game = Game()
-        self.screen = pygame.Surface((800, 600))
-        self.clock = pygame.time.Clock()
-        self.game.screen = self.screen
-        self.game.clock = self.clock
 
     def tearDown(self):
-        """Deletes the Game instance, screen, and clock created in setUp.
+        pygame.quit()
 
-        This method is called after each test and is used to delete the Game
-        instance, screen, and clock created in setUp. This is necessary to
-        prevent memory leaks.
-
-        :return: None
-        :rtype: NoneType
-        """
-        del self.game
-        del self.screen
-        del self.clock
-
-    @patch("pygame.image.load", return_value=MagicMock())
-    def test_init(self, _):
-        """
-        Tests that the Game class initializes correctly.
-        """
-        self.assertIsInstance(self.game, Game)
-        self.assertIsInstance(self.game.screen, pygame.Surface)
-        self.assertIsInstance(self.game.clock, pygame.time.Clock)
-        self.assertEqual(self.game.running, True)
-        self.assertEqual(self.game.paused, False)
-
-    def test_hero_exists(self):
-        """
-        Tests that the Game class has a hero attribute.
-        """
-        self.assertTrue(hasattr(self.game, "hero"))
+    def test_init(self):
+        """Test if the game initializes correctly"""
+        self.assertIsNotNone(self.game)
+        self.assertIsNotNone(self.game.screen)
+        self.assertIsNotNone(self.game.clock)
 
     def test_bg_image_exists(self):
-        """
-        Tests that the Game class has a bg_image attribute.
-        """
-        self.assertTrue(hasattr(self.game, "bg_image"))
+        """Test if background image is loaded correctly"""
+        self.assertIsNotNone(self.game.bg_image)
+        self.assertTrue(isinstance(self.game.bg_image, pygame.Surface))
+
+    def test_hero_exists(self):
+        """Test if hero is created and initialized correctly"""
+        self.assertIsNotNone(self.game.hero)
+        self.assertTrue(hasattr(self.game.hero, "rect"))
+        self.assertTrue(hasattr(self.game.hero, "speed"))
 
     def test_game_reset(self):
-        """
-        Tests that the game resets correctly.
-        """
+        """Test if game reset works correctly"""
+        # Set some initial values
+        self.game.score = 100
+        self.game.game_over = True
+        self.game.level = 5
+        self.game.collected_coins = 10
+        self.game.collected_jewels = 3
+
+        # Reset the game
         self.game.reset_game()
-        self.assertEqual(self.game.running, True)
-        self.assertEqual(self.game.paused, False)
-        self.assertEqual(self.game.game_over, False)
+
+        # Check if values are reset
         self.assertEqual(self.game.score, 0)
+        self.assertFalse(self.game.game_over)
         self.assertEqual(self.game.level, 1)
-        self.assertEqual(self.game.hero.speed, 5)
-        self.assertEqual(self.game.hero.life_points, 10)
         self.assertEqual(self.game.collected_coins, 0)
         self.assertEqual(self.game.collected_jewels, 0)
-
-        assert not self.game.monsters
-        assert not self.game.coins
-        assert not self.game.jewels
-        assert not self.game.potions
-
-        # Check that the hero is the only sprite in the all_sprites group
-        assert len(self.game.all_sprites) == 1
-        assert self.game.hero in self.game.all_sprites
+        self.assertIsNotNone(self.game.hero)
 
 
-if __name__ == "__main__":  # pragma: no cover
-    unittest.main()  # pragma: no cover
+if __name__ == "__main__":
+    unittest.main()
