@@ -6,11 +6,10 @@ import pygame
 from src import Game
 
 
+@patch("pygame.mixer", MagicMock())
 class TestGame(unittest.TestCase):
-    @patch("pygame.mixer.init")
-    @patch("pygame.mixer.music.load")
-    @patch("pygame.mixer.music.play")
-    def setUp(self, mock_play, mock_load, mock_init):
+
+    def setUp(self):
         """Set up a Game instance for testing.
 
         This method initializes a Game instance and assigns a pygame.Surface to
