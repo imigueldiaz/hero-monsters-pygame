@@ -223,5 +223,5 @@ class TestImageHelperInit(unittest.TestCase):
                 os.remove(os.path.join(test_folder, non_image_file))
 
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__ == "__main__":  # pragma: no cover
+    unittest.main()  # pragma: no cover
