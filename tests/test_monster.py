@@ -355,5 +355,5 @@ class TestMonsterFadeOut(unittest.TestCase):
         monster.kill.assert_called_once()
 
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__ == "__main__":  # pragma: no cover
+    unittest.main()  # pragma: no cover

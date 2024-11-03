@@ -194,5 +194,5 @@ class TestCoinUpdate(unittest.TestCase):
         coin.kill.assert_not_called()
 
 
-if __name__ == "__main__":
-    unittest.main()
+if __name__ == "__main__":  # pragma: no cover
+    unittest.main()  # pragma: no cover

@@ -174,5 +174,5 @@ class TestHeroUpdate(unittest.TestCase):
         self.assertEqual(hero.rect.x, initial_x, "Hero should not have moved")
 
 
-if __name__ == "__main__":  # pragma: no cover
-    unittest.main()  # pragma: no cover
+if __name__ == "__main__": # pragma: no cover
+    unittest.main() # pragma: no cover
