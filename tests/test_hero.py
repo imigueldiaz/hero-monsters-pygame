@@ -1,17 +1,20 @@
 import os
 import unittest
-import pygame
 from unittest.mock import MagicMock, patch
+
+import pygame
+
 from src.entities import Hero
 from src.heromonsters import SPRITES_PATH
 
+
 class TestHeroInit(unittest.TestCase):
 
-    @patch('pygame.image.load', return_value=MagicMock())
+    @patch("pygame.image.load", return_value=MagicMock())
     def test_init_valid_args(self, _):
         """Tests that Hero's __init__ method correctly assigns all the passed arguments
         to the corresponding instance variables when given valid arguments."""
-        image_path = 'path/to/image.png'
+        image_path = "path/to/image.png"
         x = 10
         y = 20
         hero_speed = 5
@@ -29,11 +32,11 @@ class TestHeroInit(unittest.TestCase):
         self.assertEqual(hero.collision_cooldown, 1000)
         self.assertEqual(hero.last_collision_time, 0)
 
-    @patch('pygame.image.load', side_effect=pygame.error)
+    @patch("pygame.image.load", side_effect=pygame.error)
     def test_init_invalid_image_path(self, _):
         """Tests that Hero's __init__ method raises a pygame.error when given an image path
         that cannot be loaded."""
-        image_path = 'invalid/path'
+        image_path = "invalid/path"
         x = 10
         y = 20
         hero_speed = 5
@@ -42,11 +45,11 @@ class TestHeroInit(unittest.TestCase):
         with self.assertRaises(pygame.error):
             Hero(image_path, x, y, hero_speed, window_width, *groups)
 
-    @patch('pygame.image.load', side_effect=pygame.error)
+    @patch("pygame.image.load", side_effect=pygame.error)
     def test_invalid__empty_image_path(self, _):
         """Tests that Hero's __init__ method raises a ValueError when given an image path
         that is an empty string."""
-        image_path = ''
+        image_path = ""
         x = 10
         y = 20
         hero_speed = 5
@@ -58,13 +61,13 @@ class TestHeroInit(unittest.TestCase):
     def test_valid_image_path(self):
         """Tests that Hero's __init__ method raises a ValueError when given an image path
         that is not a string."""
-        image_path = os.path.join(SPRITES_PATH, 'hero.png')
+        image_path = os.path.join(SPRITES_PATH, "hero.png")
         x = 10
         y = 20
         hero_speed = 5
         window_width = 800
         groups = [MagicMock()]
-        hero =Hero(image_path, x, y, hero_speed, window_width, *groups)
+        hero = Hero(image_path, x, y, hero_speed, window_width, *groups)
         self.assertEqual(hero.image_path, image_path)
         self.assertIsNotNone(hero.image)
         self.assertEqual(hero.x, x)
@@ -77,11 +80,11 @@ class TestHeroInit(unittest.TestCase):
         self.assertEqual(hero.collision_cooldown, 1000)
         self.assertEqual(hero.last_collision_time, 0)
 
-    @patch('pygame.image.load', return_value=MagicMock())
+    @patch("pygame.image.load", return_value=MagicMock())
     def test_init_invalid_x(self, _):
         """Tests that Hero's __init__ method raises a ValueError when given an x-coordinate
         that is negative."""
-        image_path = 'path/to/image.png'
+        image_path = "path/to/image.png"
         x = -10
         y = 20
         hero_speed = 5
@@ -90,11 +93,11 @@ class TestHeroInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             Hero(image_path, x, y, hero_speed, window_width, *groups)
 
-    @patch('pygame.image.load', return_value=MagicMock())
+    @patch("pygame.image.load", return_value=MagicMock())
     def test_init_invalid_y(self, _):
         """Tests that Hero's __init__ method raises a ValueError when given a y-coordinate
         that is negative."""
-        image_path = 'path/to/image.png'
+        image_path = "path/to/image.png"
         x = 10
         y = -20
         hero_speed = 5
@@ -103,11 +106,11 @@ class TestHeroInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             Hero(image_path, x, y, hero_speed, window_width, *groups)
 
-    @patch('pygame.image.load', return_value=MagicMock())
+    @patch("pygame.image.load", return_value=MagicMock())
     def test_init_invalid_hero_speed(self, _):
         """Tests that Hero's __init__ method raises a ValueError when given a hero speed
         that is negative."""
-        image_path = 'path/to/image.png'
+        image_path = "path/to/image.png"
         x = 10
         y = 20
         hero_speed = -5
@@ -116,11 +119,11 @@ class TestHeroInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             Hero(image_path, x, y, hero_speed, window_width, *groups)
 
-    @patch('pygame.image.load', return_value=MagicMock())
+    @patch("pygame.image.load", return_value=MagicMock())
     def test_init_invalid_window_width(self, _):
         """Tests that Hero's __init__ method raises a ValueError when given a window width
         that is negative."""
-        image_path = 'path/to/image.png'
+        image_path = "path/to/image.png"
         x = 10
         y = 20
         hero_speed = 5
@@ -129,44 +132,47 @@ class TestHeroInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             Hero(image_path, x, y, hero_speed, window_width, *groups)
 
-    @patch('pygame.key.get_pressed', return_value={pygame.K_LEFT: 1, pygame.K_RIGHT: 0})
-    @patch('pygame.image.load', return_value=MagicMock())
+
+class TestHeroUpdate(unittest.TestCase):
+    @patch("pygame.key.get_pressed", return_value={pygame.K_LEFT: 1, pygame.K_RIGHT: 0})
+    @patch("pygame.image.load", return_value=MagicMock())
     def test_update_moves_left(self, _, __):
         """
         Tests that Hero's update method moves the hero to the left when the left arrow
         key is pressed.
         """
-        hero = Hero('path/to/image.png', 50, 50, 5, 800, MagicMock())
+        hero = Hero("path/to/image.png", 50, 50, 5, 800, MagicMock())
         hero.rect = pygame.Rect(50, 50, 50, 50)
         initial_x = hero.rect.x
         hero.update()
         self.assertTrue(hero.rect.x < initial_x, "Hero should have moved to the left")
 
-    @patch('pygame.key.get_pressed', return_value={pygame.K_LEFT: 0, pygame.K_RIGHT: 1})
-    @patch('pygame.image.load', return_value=MagicMock())
+    @patch("pygame.key.get_pressed", return_value={pygame.K_LEFT: 0, pygame.K_RIGHT: 1})
+    @patch("pygame.image.load", return_value=MagicMock())
     def test_update_moves_right(self, _, __):
         """
         Tests that Hero's update method moves the hero to the right when the right arrow
         key is pressed.
         """
-        hero = Hero('path/to/image.png', 50, 50, 5, 800, MagicMock())
+        hero = Hero("path/to/image.png", 50, 50, 5, 800, MagicMock())
         hero.rect = pygame.Rect(50, 50, 50, 50)
         initial_x = hero.rect.x
         hero.update()
         self.assertTrue(hero.rect.x > initial_x, "Hero should have moved to the right")
 
-    @patch('pygame.key.get_pressed', return_value={pygame.K_LEFT: 0, pygame.K_RIGHT: 0})
-    @patch('pygame.image.load', return_value=MagicMock())
+    @patch("pygame.key.get_pressed", return_value={pygame.K_LEFT: 0, pygame.K_RIGHT: 0})
+    @patch("pygame.image.load", return_value=MagicMock())
     def test_update_no_movement(self, _y, __):
         """
         Tests that Hero's update method does not move the hero when no arrow keys are
         pressed.
         """
-        hero = Hero('path/to/image.png', 50, 50, 5, 800, MagicMock())
+        hero = Hero("path/to/image.png", 50, 50, 5, 800, MagicMock())
         hero.rect = pygame.Rect(50, 50, 50, 50)
         initial_x = hero.rect.x
         hero.update()
         self.assertEqual(hero.rect.x, initial_x, "Hero should not have moved")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
