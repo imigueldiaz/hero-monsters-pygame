@@ -7,20 +7,23 @@ from src import Game
 
 
 class TestGame(unittest.TestCase):
-    def setUp(self):
+    @patch("pygame.mixer.init")
+    @patch("pygame.mixer.music.load")
+    @patch("pygame.mixer.music.play")
+    def setUp(self, mock_play, mock_load, mock_init):
         """Set up a Game instance for testing.
 
         This method initializes a Game instance and assigns a pygame.Surface to
         its screen attribute and a pygame.time.Clock to its clock attribute.
         This allows the Game object to be tested without actually running the
         game.
+        Note: The mixer.init, mixer.music.load, and mixer.music.play functions
+        are mocked to prevent any audio from playing during testing.
 
         :return: None
         :rtype: NoneType
         """
         pygame.init()
-        if not pygame.mixer.get_init():  # Verify that the mixer is initialized
-            pygame.mixer.init()  # Initialize the mixer
 
         self.game = Game()
         self.screen = pygame.Surface((800, 600))
