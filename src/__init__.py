@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from .heromonsters import Game
+from .game import Game
+from .constants import *
 
-__all__ = ["Game"]
-
+__all__: list[str] = ["Game"]

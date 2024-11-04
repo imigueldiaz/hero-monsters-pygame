@@ -2,4 +2,4 @@
 
 from .imagehelper import  ImageHelper
 
-__all__ = ["ImageHelper"]
+__all__: list[str] = ["ImageHelper"]

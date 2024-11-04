@@ -20,7 +20,20 @@ class Coin(pygame.sprite.Sprite):
             Updates the position of the coin. If the coin moves out of the window,
             it is removed from the game.
     """
-    def __init__(self, image_path: str, x: int, y: int, speed: int, window_height: int) -> None:
+    fade: bool
+    window_height: int
+    fade_start_time: int
+    fade_duration: int
+    damage: int
+    image: pygame.Surface
+    rect: pygame.Rect
+    speed: int
+    image_path: str
+    x: int
+    y: int
+    MONSTER_IMAGE: pygame.Surface
+
+    def __init__(self, image_path: str, x: int, y: int, speed: int, window_height: int, *groups: pygame.sprite.Group) -> None:
         """
         Initializes a Coin object.
         Args:
@@ -35,7 +48,7 @@ class Coin(pygame.sprite.Sprite):
             There is a 50% chance that the coin's color will be changed to a random color.
         """
         # Load the base image
-        super().__init__()
+        pygame.sprite.Sprite.__init__(self, *groups)
 
         if x < 0:
             raise ValueError('x-coordinate must be non-negative')

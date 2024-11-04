@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 import pygame
 
 from src.entities import Hero
-from src.heromonsters import SPRITES_PATH
+from src.constants import SPRITES_PATH
 
 
 class TestHeroInit(unittest.TestCase):

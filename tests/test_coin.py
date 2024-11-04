@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 import pygame
 
-from src.entities.coin import Coin
+from src.entities import Coin
 
 
 class TestCoinInit(unittest.TestCase):

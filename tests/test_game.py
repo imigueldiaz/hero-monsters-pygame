@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 import pygame
 
-from src.heromonsters import Game
+from src.game import Game
 
 
 class TestGame(unittest.TestCase):
