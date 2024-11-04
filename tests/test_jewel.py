@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 import pygame
 
-from src.entities.jewel import Jewel
+from src.entities import Jewel
 
 
 class TestJewelInit(unittest.TestCase):

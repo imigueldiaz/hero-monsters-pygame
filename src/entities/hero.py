@@ -19,8 +19,22 @@ class Hero(pygame.sprite.Sprite):
         update():
             Updates the hero's position based on user input.
     """
-    def __init__(self, image_path: str, x: int, y: int, hero_speed: int, window_width: int,
-                 *groups: pygame.sprite.Group) -> None:
+    window_width: int
+    life_points: int
+    immunity: bool
+    enhanced: bool
+    collision_cooldown: int
+    last_collision_time: int
+    image: pygame.Surface
+    rect: pygame.Rect
+
+    x: int
+    y: int
+    speed: int
+    image_path: str
+
+
+    def __init__(self, image_path: str, x: int, y: int, hero_speed: int, window_width: int, *groups : pygame.sprite.Group) -> None:
         """
         Initialize a Hero object.
 
@@ -39,7 +53,9 @@ class Hero(pygame.sprite.Sprite):
             collision_cooldown (int): Cooldown period in milliseconds between collisions.
             last_collision_time (int): Timestamp of the last collision.
         """
-        super().__init__(*groups)
+        pygame.sprite.Sprite.__init__(self)
+        self.image: pygame.Surface = pygame.image.load(image_path)
+        self.rect: pygame.Rect = self.image.get_rect()
 
         if hero_speed < 0:
             raise ValueError("Hero speed must be a non-negative value.")
@@ -64,8 +80,7 @@ class Hero(pygame.sprite.Sprite):
         self.enhanced = False
         self.collision_cooldown = 1000  # 1000 milliseconds = 1 second cooldown
         self.last_collision_time = 0  # Track the last time a collision happened
-        self.image = pygame.image.load(self.image_path)
-        self.rect = self.image.get_rect()
+
         self.rect.x = self.x
         self.rect.y = self.y
 

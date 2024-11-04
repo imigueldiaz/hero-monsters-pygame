@@ -2,6 +2,7 @@
 
 import os
 import random
+from typing import LiteralString
 
 class ImageHelper:
     """
@@ -21,7 +22,7 @@ class ImageHelper:
         pass
 
     @staticmethod
-    def calculate_weights(image_files: list) -> list:
+    def calculate_weights(image_files: list) -> list[float]:
         """
         Calculates the weights for selecting a random image from the list of provided image files.
 
@@ -33,10 +34,10 @@ class ImageHelper:
         :param image_files: A list of image file names.
         :return: A list of weights corresponding to the image files.
         """
-        weights = []
+        weights: list[float] = []
         for image in image_files:
             # Extract any numbers from the image file name
-            number_str = ''.join([char for char in image if char.isdigit()])
+            number_str: LiteralString = ''.join([char for char in image if char.isdigit()])
             if number_str:
                 # Use the number as the weight
                 weight = int(number_str)
@@ -49,7 +50,7 @@ class ImageHelper:
 
 
     @staticmethod
-    def get_random_image(image_folder: str) -> tuple:
+    def get_random_image(image_folder: str) -> tuple[str,str]:
         """
         Returns a tuple containing a random image file name and its full path from the specified folder.
 
@@ -57,7 +58,7 @@ class ImageHelper:
         :return: A tuple containing the image file name and its full path.
         """
         # Get a list of all image files in the specified folder
-        image_files = [
+        image_files: list[str] = [
             f for f in os.listdir(image_folder)
             if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))
         ]
@@ -66,10 +67,10 @@ class ImageHelper:
             raise ValueError("No valid image files found in the specified folder")
 
         # Calculate weights for image selection
-        weights = ImageHelper.calculate_weights(image_files)
+        weights: list[float] = ImageHelper.calculate_weights(image_files)
 
         # Choose a random image from the list, with calculated weights
-        random_image = random.choices(image_files, weights=weights, k=1)[0]
-        image_path = os.path.join(image_folder, random_image)
+        random_image: str = random.choices(image_files, weights=weights, k=1)[0]
+        image_path: str = os.path.join(image_folder, random_image)
 
         return random_image, image_path
