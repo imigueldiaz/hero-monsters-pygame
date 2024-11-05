@@ -21,7 +21,20 @@ class Monster(pygame.sprite.Sprite):
         update(current_time: int):
             Updates the monster's position and handles its fade out and removal.
     """
-    def __init__(self, image_folder: str, x: int, y: int, monster_speed: int, window_height: int) -> None:
+    fade: bool
+    window_height: int
+    fade_start_time: int
+    fade_duration: int
+    damage: int
+    image: pygame.Surface
+    rect: pygame.Rect
+    speed: int
+    image_path: str
+    x: int
+    y: int
+    MONSTER_IMAGE: pygame.Surface
+
+    def __init__(self, image_folder: str, x: int, y: int, monster_speed: int, window_height: int, *groups: pygame.sprite.Group) -> None:
         """
         Initialize a Monster entity.
 
@@ -35,7 +48,7 @@ class Monster(pygame.sprite.Sprite):
         Attributes:
             window_height (int): The height of the game window.
         """
-        super().__init__()
+        pygame.sprite.Sprite.__init__(self, *groups)
 
 
         # Select a random image from the provided folder
@@ -63,7 +76,7 @@ class Monster(pygame.sprite.Sprite):
 
         # the damage value is extracted from the image file name
         # Extract the first sequence of digits from the filename
-        match = re.search(r'\d+', random_image)
+        match: re.Match[str] | None = re.search(r'\d+', random_image)
         self.damage = int(match.group()) if match else 1
 
         #resize the image based on the monster's damage
@@ -81,7 +94,7 @@ class Monster(pygame.sprite.Sprite):
         self.fade = True
         self.fade_start_time = current_time
 
-    def update(self):
+    def update(self) -> None:
         # Updates the state of the monster, including handling the fade-out effect
         """
         Updates the monster's position and handles its fade out and removal.
@@ -99,7 +112,7 @@ class Monster(pygame.sprite.Sprite):
             if self.alpha > 255:
                 self.alpha = 255
 
-            self.alpha = max(0, self.alpha)  # alpha should never be < 0.
+            self.alpha: int = max(0, self.alpha)  # alpha should never be < 0.
             self.image = self.MONSTER_IMAGE.copy()
             self.image.fill((255, 255, 255, self.alpha), special_flags=pygame.BLEND_RGBA_MULT)
             if self.alpha <= 0:  # Kill the sprite when the alpha is <= 0.

@@ -5,7 +5,4 @@ from .monster import Monster
 from .coin import Coin
 from .jewel import Jewel
 
-__all__ = ["Hero", "Monster", "Coin", "Jewel"]
-
-
-
+__all__: list[str] = ["Hero", "Monster", "Coin", "Jewel"]

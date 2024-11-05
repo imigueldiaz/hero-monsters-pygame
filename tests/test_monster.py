@@ -3,7 +3,7 @@ from unittest.mock import patch, MagicMock
 
 import pygame
 
-from src.entities.monster import Monster
+from src.entities import Monster
 # noinspection PyUnresolvedReferences
 from src.helpers.imagehelper import ImageHelper
 
