@@ -8,7 +8,7 @@ from src.entities import Coin
 
 class TestCoinInit(unittest.TestCase):
     @patch("pygame.image.load", return_value=MagicMock())
-    def test_init_valid_args(self, mock_image_load):
+    def test_init_valid_args(self, mock_image_load) -> None:
         # Mock pygame.image.load to return an actual Surface object
         """
         Verifies that the Coin class can be initialized with valid arguments.
@@ -33,7 +33,7 @@ class TestCoinInit(unittest.TestCase):
         self.assertIsNotNone(coin.rect)
 
     @patch("pygame.image.load", side_effect=pygame.error)
-    def test_init_invalid_image_path(self, _):
+    def test_init_invalid_image_path(self, _) -> None:
         """
         Verifies that the Coin class raises a pygame.error when given an invalid image path.
 
@@ -52,7 +52,8 @@ class TestCoinInit(unittest.TestCase):
         with self.assertRaises(pygame.error):
             Coin(image_path, x, y, speed, window_height)
 
-    def test_init_invalid_x(self):
+    @patch("pygame.image.load", return_value=MagicMock())
+    def test_init_invalid_x(self, _) -> None:
         """
         Verifies that the Coin class raises a ValueError when given an x-coordinate
         that is negative.
@@ -76,7 +77,8 @@ class TestCoinInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             Coin(image_path, x, y, speed, window_height)
 
-    def test_init_invalid_y(self):
+    @patch("pygame.image.load", return_value=MagicMock())
+    def test_init_invalid_y(self,_) -> None:
         """
         Verifies that the Coin class raises a ValueError when given a y-coordinate
         that is negative.
@@ -92,7 +94,8 @@ class TestCoinInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             Coin(image_path, x, y, speed, window_height)
 
-    def test_init_invalid_speed(self):
+    @patch("pygame.image.load", return_value=MagicMock())
+    def test_init_invalid_speed(self, _) -> None:
         """
         Verifies that the Coin class raises a ValueError when given a speed
         that is negative.
@@ -108,7 +111,8 @@ class TestCoinInit(unittest.TestCase):
         with self.assertRaises(ValueError):
             Coin(image_path, x, y, speed, window_height)
 
-    def test_init_invalid_window_height(self):
+    @patch("pygame.image.load", return_value=MagicMock())
+    def test_init_invalid_window_height(self, _) -> None:
         """
         Verifies that the Coin class raises a ValueError when given a window_height
         that is negative.
@@ -126,7 +130,7 @@ class TestCoinInit(unittest.TestCase):
 
     @patch("random.choices", return_value=[1])
     @patch("pygame.image.load", return_value=MagicMock())
-    def test_random_value_assignment(self, _, __):
+    def test_random_value_assignment(self, _, __) -> None:
         """
         Verifies that the Coin class assigns a random value between 1 and 25 to the Coin object.
 
@@ -149,7 +153,7 @@ class TestCoinInit(unittest.TestCase):
 
 class TestCoinUpdate(unittest.TestCase):
     @patch("pygame.image.load", return_value=MagicMock())
-    def test_coin_moves_downwards(self, _):
+    def test_coin_moves_downwards(self, _) -> None:
         """
         Verifies that the Coin class moves the Coin object downwards by the speed of the Coin when the update method is called.
 
@@ -162,7 +166,7 @@ class TestCoinUpdate(unittest.TestCase):
         self.assertEqual(coin.rect.y, initial_y + 5)
 
     @patch("pygame.image.load", return_value=MagicMock())
-    def test_coin_is_removed_when_out_of_window(self, _):
+    def test_coin_is_removed_when_out_of_window(self, _) -> None:
         """
         Verifies that the Coin class removes the Coin object when it moves out of the window.
 
@@ -178,7 +182,7 @@ class TestCoinUpdate(unittest.TestCase):
         coin.kill.assert_called_once()
 
     @patch("pygame.image.load", return_value=MagicMock())
-    def test_coin_is_not_removed_when_within_window(self, _):
+    def test_coin_is_not_removed_when_within_window(self, _) -> None:
         """
         Verifies that the Coin class does not remove the Coin object when it is within the window.
 

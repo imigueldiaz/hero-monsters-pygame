@@ -3,9 +3,10 @@ import re
 
 import pygame
 
+from entities.base import BaseSprite
 from src.helpers import ImageHelper
 
-class Monster(pygame.sprite.Sprite):
+class Monster(BaseSprite):
     """
     A class representing a monster in the game.
     Attributes:
@@ -34,7 +35,7 @@ class Monster(pygame.sprite.Sprite):
     y: int
     MONSTER_IMAGE: pygame.Surface
 
-    def __init__(self, image_folder: str, x: int, y: int, monster_speed: int, window_height: int, *groups: pygame.sprite.Group) -> None:
+    def __init__(self, image_folder: str, x: int, y: int, monster_speed: int, window_height: int) -> None:
         """
         Initialize a Monster entity.
 
@@ -48,7 +49,7 @@ class Monster(pygame.sprite.Sprite):
         Attributes:
             window_height (int): The height of the game window.
         """
-        pygame.sprite.Sprite.__init__(self, *groups)
+        super(Monster, self).__init__()
 
 
         # Select a random image from the provided folder

@@ -12,7 +12,7 @@ class ImageHelper:
     - Retrieve a random image file name and its full path from a specified folder.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
         Initializes an instance of the ImageHelper class.
 
