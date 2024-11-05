@@ -2,7 +2,6 @@
 
 import os
 import random
-from typing import LiteralString
 
 class ImageHelper:
     """
@@ -22,7 +21,7 @@ class ImageHelper:
         pass
 
     @staticmethod
-    def calculate_weights(image_files: list) -> list[float]:
+    def calculate_weights(image_files: list[str]) -> list[float]:
         """
         Calculates the weights for selecting a random image from the list of provided image files.
 
@@ -37,7 +36,7 @@ class ImageHelper:
         weights: list[float] = []
         for image in image_files:
             # Extract any numbers from the image file name
-            number_str: LiteralString = ''.join([char for char in image if char.isdigit()])
+            number_str: str= ''.join([char for char in image if char.isdigit()])
             if number_str:
                 # Use the number as the weight
                 weight = int(number_str)
@@ -50,7 +49,7 @@ class ImageHelper:
 
 
     @staticmethod
-    def get_random_image(image_folder: str) -> tuple[str,str]:
+    def get_random_image(image_folder: str) -> tuple[str, str]:
         """
         Returns a tuple containing a random image file name and its full path from the specified folder.
 
