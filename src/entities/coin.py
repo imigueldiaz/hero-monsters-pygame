@@ -3,7 +3,7 @@
 import random
 import pygame
 
-from entities.base import BaseSprite
+from .base import BaseSprite
 
 
 class Coin(BaseSprite):

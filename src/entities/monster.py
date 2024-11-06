@@ -3,7 +3,7 @@ import re
 
 import pygame
 
-from entities.base import BaseSprite
+from .base import BaseSprite
 from src.helpers import ImageHelper
 
 class Monster(BaseSprite):
