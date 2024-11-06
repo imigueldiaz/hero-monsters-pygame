@@ -3,8 +3,10 @@
 import random
 import pygame
 
+from entities.base import BaseSprite
 
-class Coin(pygame.sprite.Sprite):
+
+class Coin(BaseSprite):
     """
     Coin class represents a collectible coin in the game.
     Attributes:
@@ -33,7 +35,7 @@ class Coin(pygame.sprite.Sprite):
     y: int
     MONSTER_IMAGE: pygame.Surface
 
-    def __init__(self, image_path: str, x: int, y: int, speed: int, window_height: int, *groups: pygame.sprite.Group) -> None:
+    def __init__(self, image_path: str, x: int, y: int, speed: int, window_height: int) -> None:
         """
         Initializes a Coin object.
         Args:
@@ -48,16 +50,7 @@ class Coin(pygame.sprite.Sprite):
             There is a 50% chance that the coin's color will be changed to a random color.
         """
         # Load the base image
-        pygame.sprite.Sprite.__init__(self, *groups)
-
-        if x < 0:
-            raise ValueError('x-coordinate must be non-negative')
-        if y < 0:
-            raise ValueError('y-coordinate must be non-negative')
-        if speed < 0:
-            raise ValueError('speed must be non-negative')
-        if window_height < 0:
-            raise ValueError('window height must be non-negative')
+        super(Coin, self).__init__()
 
         self.image_path = image_path
         self.x = x
@@ -69,7 +62,14 @@ class Coin(pygame.sprite.Sprite):
         self.rect.y = self.y
         self.speed = speed
 
-
+        if x < 0:
+            raise ValueError('x-coordinate must be non-negative')
+        if y < 0:
+            raise ValueError('y-coordinate must be non-negative')
+        if speed < 0:
+            raise ValueError('speed must be non-negative')
+        if window_height < 0:
+            raise ValueError('window height must be non-negative')
 
         # Apply a random color mask to the coin image with a 50% chance
         # Assign a random value to the coin between 1 and 25 taking account inverse weight

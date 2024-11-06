@@ -2,23 +2,14 @@
 
 import pygame
 
+from entities.base import BaseSprite
 
-class Hero(pygame.sprite.Sprite):
+
+class Hero(BaseSprite):
     """
-    Hero class represents the main character in the game.
-    Attributes:
-        window_width (int): The width of the game window.
-        life_points (int): The life points of the hero.
-        immunity (bool): Indicates if the hero is currently immune to damage.
-        enhanced (bool): Indicates if the hero has enhanced abilities.
-        collision_cooldown (int): The cooldown period in milliseconds after a collision.
-        last_collision_time (int): The timestamp of the last collision.
-    Methods:
-        __init__(image_path: str, x: int, y: int, hero_speed: int, window_width: int):
-            Initializes the Hero object with the given parameters.
-        update():
-            Updates the hero's position based on user input.
+    A class representing the hero in the game.
     """
+
     window_width: int
     life_points: int
     immunity: bool
@@ -34,7 +25,7 @@ class Hero(pygame.sprite.Sprite):
     image_path: str
 
 
-    def __init__(self, image_path: str, x: int, y: int, hero_speed: int, window_width: int, *groups : pygame.sprite.Group) -> None:
+    def __init__(self, image_path: str, x: int, y: int, hero_speed: int, window_width: int) -> None:
         """
         Initialize a Hero object.
 
@@ -53,9 +44,9 @@ class Hero(pygame.sprite.Sprite):
             collision_cooldown (int): Cooldown period in milliseconds between collisions.
             last_collision_time (int): Timestamp of the last collision.
         """
-        pygame.sprite.Sprite.__init__(self)
-        self.image: pygame.Surface = pygame.image.load(image_path)
-        self.rect: pygame.Rect = self.image.get_rect()
+        super(Hero, self).__init__()
+        self.image = pygame.image.load(image_path).convert_alpha()
+        self.rect = self.image.get_rect()
 
         if hero_speed < 0:
             raise ValueError("Hero speed must be a non-negative value.")

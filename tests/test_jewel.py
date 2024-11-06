@@ -13,7 +13,7 @@ class TestJewelInit(unittest.TestCase):
         return_value=(None, "path/to/image.png"),
     )
     @patch("pygame.image.load", return_value=MagicMock())
-    def test_init_valid_args(self, mock_image_load, mock_get_random_image):
+    def test_init_valid_args(self, mock_image_load, _) -> None:
         """
         Tests that the Jewel class can be initialized with valid arguments.
 
@@ -40,7 +40,7 @@ class TestJewelInit(unittest.TestCase):
         self.assertIsNotNone(jewel.rect)
 
     @patch("src.helpers.ImageHelper.get_random_image", side_effect=FileNotFoundError)
-    def test_init_invalid_image_path(self, _):
+    def test_init_invalid_image_path(self, _) -> None:
         """
         Tests that the Jewel class raises a FileNotFoundError when given an image folder
         that does not exist.
@@ -65,7 +65,7 @@ class TestJewelUpdate(unittest.TestCase):
         return_value=(None, "path/to/image.png"),
     )
     @patch("pygame.image.load", return_value=MagicMock())
-    def test_update_position(self, mock_image_load, mock_get_random_image):
+    def test_update_position(self, mock_image_load, _) -> None:
         """
         Tests that the Jewel class updates the position of the jewel correctly.
 
@@ -85,7 +85,7 @@ class TestJewelUpdate(unittest.TestCase):
         window_height = 800
 
         jewel = Jewel(image_folder, x, y, speed, window_height)
-        initial_y = jewel.rect.y
+        initial_y: int = jewel.rect.y
 
         jewel.update()
 
@@ -97,8 +97,8 @@ class TestJewelUpdate(unittest.TestCase):
     )
     @patch("pygame.image.load", return_value=MagicMock())
     def test_update_removes_jewel_out_of_bounds(
-        self, mock_image_load, mock_get_random_image
-    ):
+        self, mock_image_load, _
+    ) -> None:
         """
         Tests that the Jewel class removes the jewel when it goes out of bounds.
 

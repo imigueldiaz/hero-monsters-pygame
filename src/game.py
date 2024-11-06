@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-from typing import LiteralString
+from re import S
+from typing import LiteralString, Protocol, TypeVar, cast
 import pygame
 import random
 import math
 
 from pygame.font import Font
 from constants import *
+from entities.base import BaseSprite
 from utils import apply_flame_ripple
 from assets_loader import load_fonts, load_images, load_sounds
 
@@ -16,6 +18,8 @@ from src.entities.monster import Monster
 from src.entities.coin import Coin
 from src.entities.jewel import Jewel
 
+
+TSprite = TypeVar("TSprite", bound=pygame.sprite.Sprite)
 
 class Game:
 
@@ -46,13 +50,41 @@ class Game:
     hero_is_blinking: bool
     level: int
     all_sprites: pygame.sprite.Group = pygame.sprite.Group()
-    monsters: pygame.sprite.Group = pygame.sprite.Group()
     coins: pygame.sprite.Group = pygame.sprite.Group()
-    jewels: pygame.sprite.Group  = pygame.sprite.Group()
+    monsters: pygame.sprite.Group = pygame.sprite.Group()
+    jewels: pygame.sprite.Group = pygame.sprite.Group()
     potions: pygame.sprite.Group = pygame.sprite.Group()
-    herogroup: pygame.sprite.GroupSingle = pygame.sprite.GroupSingle()
-
     def __init__(self) -> None:
+        """
+        Initialize a Game object.
+
+        This method initializes the game by setting up the game window, loading
+        fonts, images, and sounds, setting up the background, hero, and score, and
+        starting the game loop.
+
+        Args:
+            None
+
+        Attributes:
+            screen (pygame.Surface): The game window.
+            emoji_font, font, font_XL (Font): The fonts used in the game.
+            bg_image, hero_image, coin_image (pygame.Surface): The images used in the game.
+            COIN_SOUND, JEWEL_SOUND, HIT (pygame.mixer.Sound): The sounds used in the game.
+            bg_width, bg_height (int): The width and height of the background image.
+            bg_x, bg_y (int): The x and y coordinates of the background image.
+            collected_jewels, collected_coins (int): The number of jewels and coins collected.
+            hero (Hero): The hero object.
+            all_sprites (pygame.sprite.Group): A group of all sprites in the game.
+            score (int): The score of the game.
+            game_over (bool): A flag indicating if the game is over.
+            clock (pygame.time.Clock): The clock object used to control the game loop.
+            running (bool): A flag indicating if the game is running.
+            paused (bool): A flag indicating if the game is paused.
+            blink_duration (int): The duration of the blinking effect in milliseconds.
+            blink_start_time (int): The start time of the blinking effect in milliseconds.
+            hero_is_blinking (bool): A flag indicating if the hero is blinking.
+            level (int): The current level of the game.
+        """
         pygame.init()
         self.screen: pygame.Surface = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
         pygame.display.set_caption("Hero vs Monsters")
@@ -72,7 +104,7 @@ class Game:
         pygame.display.set_icon(self.hero_image)
 
         self.hero = self.create_hero()
-        self.herogroup.add(self.hero)
+
         self.all_sprites.add(self.hero)
 
 
@@ -88,16 +120,33 @@ class Game:
         self.level = 1
 
     def create_hero(self) -> Hero:
+        """
+        Create a hero object.
+
+        This method creates a hero object with the specified position and speed.
+
+        Returns:
+            hero (Hero): The hero object.
+        """
         hero: Hero = Hero(
             os.path.join(SPRITES_PATH, "hero.png"),
             WINDOW_WIDTH // 2 - self.hero_image.get_width() // 2,
             WINDOW_HEIGHT - self.hero_image.get_height() - 10,
             HERO_SPEED,
-            WINDOW_WIDTH
+            WINDOW_WIDTH,
         )
         return hero
 
     def create_coin(self) -> Coin:
+        """
+        Create a coin object.
+
+        This method creates a coin object with a random x-coordinate within the window width
+        and an initial y-coordinate of 0. The coin moves downwards with the specified speed.
+
+        Returns:
+            coin (Coin): The coin object.
+        """
         x: int = random.randint(0, WINDOW_WIDTH - self.coin_image.get_width())
         y: int = self.coin_image.get_height()
         return Coin(
@@ -110,12 +159,30 @@ class Game:
 
     @staticmethod
     def create_jewel() -> Jewel:
+        """
+        Create a jewel object.
+
+        This method creates a jewel object with a random x-coordinate within the window width
+        and an initial y-coordinate of 0. The jewel moves downwards with the specified speed.
+
+        Returns:
+            jewel (Jewel): The jewel object.
+        """
         x: int = random.randint(0, WINDOW_WIDTH - 64)
         y: int = 0
         return Jewel(JEWELS_PATH, x, y, JEWEL_SPEED, WINDOW_HEIGHT)
 
     @staticmethod
     def create_monster() -> Monster:
+        """
+        Create a monster object.
+
+        This method creates a monster object with a random x-coordinate within the window width
+        and an initial y-coordinate of 0. The monster moves downwards with the specified speed.
+
+        Returns:
+            monster (Monster): The monster object.
+        """
         x: int = random.randint(0, WINDOW_WIDTH - 64)
         return Monster(MONSTERS_PATH, x, 0, MONSTER_SPEED, WINDOW_HEIGHT)
 
@@ -142,6 +209,17 @@ class Game:
         self.screen.blit(jewels_text, (10, 170))
 
     def display_game_over(self) -> None:
+        """
+        Display the game over screen with a blinking hero and a restart message.
+
+        This method renders the game over text in red and golden colors, with a blinking
+        hero in the background. The text is centered on the screen and the method updates
+        the display after rendering the text.
+
+        Returns:
+            None
+        """
+
         self.blink_hero()
         text: LiteralString = f"💀 Game Over! Press Space to Restart"
 
@@ -160,6 +238,19 @@ class Game:
         pygame.display.flip()
 
     def blink_hero(self) -> None:
+        """
+        Blink the hero with a golden and red glow effect.
+
+        This method blinks the hero by alternating between a golden and red glow effect
+        on the hero's image. The glow effect is achieved by creating a surface with a
+        circular mask and then applying a flame ripple effect to the surface. The
+        resulting surface is then blitted onto the screen at the hero's position.
+
+        The method also updates the display after blitting the surface.
+
+        Returns:
+            None
+        """
         mask: pygame.Mask = pygame.mask.from_surface(self.hero_image)
         mask_surface: pygame.Surface = mask.to_surface(setcolor=GOLDENTRANS, unsetcolor=(0, 0, 0, 0))
         ripple_amplitude = 20
@@ -195,6 +286,14 @@ class Game:
         pygame.display.flip()
 
     def reset_game(self) -> None:
+        """Reset the game state to its initial state.
+
+        This method resets the game score, flags, all sprite groups, level, and collected items to their initial state.
+        It also creates a new Hero object.
+
+        Returns:
+            None
+        """
         self.score = 0
         self.game_over = False
         self.all_sprites.empty()
@@ -208,6 +307,22 @@ class Game:
         self.hero = self.create_hero()
 
     def handle_monster_collision(self, colliding_monsters, current_time):
+        """
+        Handle collision between the hero and monsters.
+
+        This method handles collisions between the hero and monsters. If the hero's
+        collision cooldown has expired, the method will deduct the monster's damage
+        from the hero's life points, play a hit sound, and set the hero's blinking
+        flag to True. If the hero's life points reach zero, the method will set the
+        game_over flag to True.
+
+        Args:
+            colliding_monsters (list[Monster]): A list of monsters that have collided with the hero.
+            current_time (int): The current time in milliseconds.
+
+        Returns:
+            None
+        """
         if current_time - self.hero.last_collision_time > self.hero.collision_cooldown:
             if self.hero.life_points > 0:
                 self.HIT.play(HIT_SOUND_TIMES)
@@ -223,6 +338,16 @@ class Game:
                 self.game_over = True
 
     def run(self) -> None:
+        """
+        Run the game loop.
+
+        This method runs the game loop until the game is quit or the game over flag is set to True.
+        The method handles the game loop, including event handling, updating, drawing, and collision detection.
+        It also handles the game over state and displays the game over screen.
+
+        Returns:
+            None
+        """
         while self.running:
             current_time: int = pygame.time.get_ticks()
             for event in pygame.event.get():
@@ -271,8 +396,8 @@ class Game:
                     if self.is_positionable(jewel):
                         self.jewels.add(jewel)
                         self.all_sprites.add(jewel)
-
-                colliding_monsters: list[pygame.sprite.Sprite] = pygame.sprite.spritecollide(self.hero, self.monsters, True) # type: ignore
+                hero_sprite: BaseSprite = cast(BaseSprite, self.hero)
+                colliding_monsters: list[pygame.sprite.Sprite] = pygame.sprite.spritecollide(hero_sprite, self.monsters, True)
                 if colliding_monsters:
                     self.handle_monster_collision(colliding_monsters, current_time)
 
@@ -315,8 +440,28 @@ class Game:
 
         pygame.quit()
 
-    def handle_collection(self, items, collection_attr, sound, volume_base):
-        for item in pygame.sprite.spritecollide(self.hero, items, True): # type: ignore
+    def handle_collection(
+    self,
+    items: pygame.sprite.Group,
+    collection_attr: str,
+    sound: pygame.mixer.Sound,
+    volume_base: float
+    ) -> None:
+        """
+        Handles the collection of items and updates the score and the
+        collection attribute. It also plays a sound and sets its volume
+        based on the value of the item collected.
+
+        Args:
+            items (pygame.sprite.Group): The group of items to check for collection.
+            collection_attr (str): The name of the attribute to increase
+                when an item is collected.
+            sound (pygame.mixer.Sound): The sound to play when an item is collected.
+            volume_base (float): The base volume to use for the sound.
+        """
+
+        hero_sprite: BaseSprite = cast(BaseSprite, self.hero)
+        for item in pygame.sprite.spritecollide(hero_sprite, items, True):
             self.score += item.value
             setattr(self, collection_attr, getattr(self, collection_attr) + 1)
 
@@ -324,12 +469,24 @@ class Game:
             sound.set_volume(volume)
             sound.play()
 
-    def is_positionable(self, asset) -> bool:
+
+    def is_positionable(self, asset: BaseSprite) -> bool:
+        """
+        Checks if the given asset can be positioned without overlapping with any other asset.
+
+        Args:
+            asset (pygame.sprite.Sprite): The asset to check.
+
+        Returns:
+            bool: True if the asset can be positioned, False otherwise.
+        """
         return all(
-            not pygame.sprite.spritecollideany(asset, group)
+            not pygame.sprite.spritecollideany(
+                asset, group
+            )
             for group in [self.jewels, self.coins, self.monsters, self.potions]
         )
 
-if __name__ == "__main__":
-    game = Game()
-    game.run()
+if __name__ == "__main__":  # pragma: no cover
+    game = Game() # pragma: no cover
+    game.run() # pragma: no cover
