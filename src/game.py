@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-from re import S
-from typing import LiteralString, Protocol, TypeVar, cast
+from typing import cast
 import pygame
 import random
 import math
@@ -13,13 +12,8 @@ from utils import apply_flame_ripple
 from assets_loader import load_fonts, load_images, load_sounds
 
 
-from src.entities.hero import Hero
-from src.entities.monster import Monster
-from src.entities.coin import Coin
-from src.entities.jewel import Jewel
+from src.entities import Hero, Monster, Coin, Jewel, BaseSprite
 
-
-TSprite = TypeVar("TSprite", bound=pygame.sprite.Sprite)
 
 class Game:
 
@@ -221,7 +215,7 @@ class Game:
         """
 
         self.blink_hero()
-        text: LiteralString = f"💀 Game Over! Press Space to Restart"
+        text: str = f"💀 Game Over! Press Space to Restart"
 
         game_over_text_red: pygame.Surface = self.font_XL.render(text, True, REDFIRETRANS)
         text_rect: pygame.Rect = game_over_text_red.get_rect(

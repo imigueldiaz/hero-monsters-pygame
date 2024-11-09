@@ -36,13 +36,9 @@ class Hero(BaseSprite):
             hero_speed (int): The speed at which the hero moves.
             window_width (int): The width of the game window.
 
-        Attributes:
-            window_width (int): The width of the game window.
-            life (int): The life points of the hero.
-            immunity (bool): Flag indicating if the hero is immune to damage.
-            enhanced (bool): Flag indicating if the hero has enhanced abilities.
-            collision_cooldown (int): Cooldown period in milliseconds between collisions.
-            last_collision_time (int): Timestamp of the last collision.
+        Raises:
+            ValueError: If hero_speed, window_width, x, or y is negative.
+
         """
         super(Hero, self).__init__()
         self.image = pygame.image.load(image_path).convert_alpha()
